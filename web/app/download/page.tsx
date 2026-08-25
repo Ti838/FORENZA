@@ -99,48 +99,22 @@ export default function DownloadPage() {
     }
   }
 
-  // Direct Windows Launcher Download
+  // Direct Windows Launcher Download via API Route
   const handleDownloadWindows = () => {
-    toast.info('Downloading FORENZA Windows Forensic Setup package...')
-    const link = document.createElement('a')
-    link.href = '/downloads/Forenza-Forensic-Setup.bat'
-    link.download = 'Forenza-Forensic-Setup.bat'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    toast.success('Download complete: Forenza-Forensic-Setup.bat (Double-click to run)')
+    toast.info('Downloading FORENZA Windows Forensic Setup (.bat)...')
+    window.location.href = '/api/download/windows'
   }
 
-  // Direct Android APK Download
+  // Direct Android APK Download via API Route
   const handleDownloadAndroid = () => {
-    toast.info('Preparing Android APK Field Client...')
-    const dummyContent = 'FORENZA Android Field Client v1.4.0 (ARM64-v8a)\nCertified GPS Geofence & AI Classifier runtime.'
-    const blob = new Blob([dummyContent], { type: 'application/vnd.android.package-archive' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'forenza-field-client.apk'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    toast.success('Download started: forenza-field-client.apk')
+    toast.info('Downloading Android APK Field Client (.apk)...')
+    window.location.href = '/api/download/android'
   }
 
-  // Direct macOS Download
+  // Direct macOS Download via API Route
   const handleDownloadMac = () => {
-    toast.info('Preparing macOS Universal Package...')
-    const dummyContent = 'FORENZA macOS Universal Judicial Workstation v1.4.0\nCertified Apple Silicon & Intel Universal binary.'
-    const blob = new Blob([dummyContent], { type: 'application/x-apple-diskimage' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'Forenza-Universal-macOS.dmg'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    toast.success('Download started: Forenza-Universal-macOS.dmg')
+    toast.info('Downloading macOS Universal Package (.dmg)...')
+    window.location.href = '/api/download/macos'
   }
 
   const handleCopyHash = (hash: string) => {
@@ -236,6 +210,36 @@ export default function DownloadPage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* 1-Click Instant Desktop Installation Card */}
+        <div className="forenza-card p-5 sm:p-6 rounded-3xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-blue-600 text-white shrink-0 shadow-md shadow-blue-600/30">
+              <Monitor className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-sm text-slate-900 dark:text-white">
+                  ⚡ 1-Click Desktop App Installation (Recommended)
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                  Instant
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                Click the <strong>[ 🖥️↓ ] Install App</strong> icon located in your Chrome / Edge address bar (top right next to the Star button). FORENZA will be added to your <strong>Windows Desktop & Start Menu</strong> as a standalone application!
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handlePwaInstall}
+            className="shrink-0 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+          >
+            Launch Install Prompt
+          </button>
         </div>
 
         {/* All Certified Platform Packages Grid */}
