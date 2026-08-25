@@ -86,6 +86,13 @@ export default function HomePage() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link
+            href="/download"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:border-blue-500 shadow-xs transition-colors"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-500" />
+            <span>Download App</span>
+          </Link>
+          <Link
             href="/login"
             className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
           >
@@ -112,6 +119,24 @@ export default function HomePage() {
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
             FORENZA manages the complete evidentiary lifecycle from crime-scene acquisition under verified GPS geofences to courtroom judicial review with mathematical SHA-256 chain-of-custody proof.
           </p>
+
+          {/* Quick CTA Actions */}
+          <div className="flex items-center justify-center flex-wrap gap-3 pt-2">
+            <Link
+              href="/download"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-lg shadow-blue-600/25 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Client App (PC / Mobile)</span>
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold text-xs hover:border-blue-500 shadow-xs transition-all"
+            >
+              <span>Personnel Sign In</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {/* Role Portals Grid */}

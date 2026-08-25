@@ -13,7 +13,9 @@ import {
   Lock,
   ArrowRight,
   Smartphone,
+  Download,
 } from 'lucide-react'
+import Link from 'next/link'
 import { getDashboardPath } from '@/lib/rbac'
 import { AppRole } from '@/types'
 
@@ -191,10 +193,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Device notice */}
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-mono">
-            <Smartphone className="w-3.5 h-3.5 text-blue-500" />
-            <span>DEVICE BINDING & MFA ACTIVE</span>
+          {/* Device notice & Download Client App link */}
+          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col items-center gap-2.5 text-[11px] text-slate-400 font-mono">
+            <div className="flex items-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5 text-blue-500" />
+              <span>DEVICE BINDING & MFA ACTIVE</span>
+            </div>
+            <Link
+              href="/download"
+              className="text-xs text-blue-600 dark:text-blue-400 font-sans font-bold hover:underline flex items-center gap-1"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download Desktop & Mobile App</span>
+            </Link>
           </div>
         </div>
       </div>
