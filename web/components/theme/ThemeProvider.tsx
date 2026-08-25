@@ -1,8 +1,8 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 
-type Theme = 'light' | 'dark' | 'system'
+export type Theme = 'light' | 'dark' | 'system'
 
 interface ThemeContextType {
   theme: Theme
@@ -13,33 +13,19 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark')
+  const [theme, setThemeState] = useState<Theme>('system')
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark')
-  const [mounted, setMounted] = useState(false)
+  const themeRef = useRef<Theme>('system')
 
-  useEffect(() => {
-    const stored = (localStorage.getItem('forenza-theme') as Theme) || 'dark'
-    setThemeState(stored)
-    applyTheme(stored)
-    setMounted(true)
+  const applyTheme = useCallback((t: Theme) => {
+    if (typeof window === 'undefined') return
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleChange = () => {
-      if (theme === 'system') {
-        applyTheme('system')
-      }
-    }
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
-
-  const applyTheme = (t: Theme) => {
     const root = document.documentElement
     let effective: 'light' | 'dark' = 'dark'
 
     if (t === 'system') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      effective = systemDark ? 'dark' : 'light'
+      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      effective = isSystemDark ? 'dark' : 'light'
     } else {
       effective = t
     }
@@ -55,9 +41,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
 
     setResolvedTheme(effective)
-  }
+  }, [])
+
+  useEffect(() => {
+    const stored = (localStorage.getItem('forenza-theme') as Theme) || 'system'
+    themeRef.current = stored
+    setThemeState(stored)
+    applyTheme(stored)
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleMediaChange = () => {
+      if (themeRef.current === 'system') {
+        applyTheme('system')
+      }
+    }
+
+    mediaQuery.addEventListener('change', handleMediaChange)
+    return () => mediaQuery.removeEventListener('change', handleMediaChange)
+  }, [applyTheme])
 
   const setTheme = (newTheme: Theme) => {
+    themeRef.current = newTheme
     setThemeState(newTheme)
     localStorage.setItem('forenza-theme', newTheme)
     applyTheme(newTheme)
