@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ForenzaLogo } from '@/components/brand/ForenzaLogo'
-import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import {
   LayoutDashboard,
   FolderLock,
@@ -197,14 +196,8 @@ export function AppSidebar({
         </nav>
       </div>
 
-      {/* Bottom Section: Theme Toggle, Profile & Logout */}
-      <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
-        {/* Theme Switch */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Interface Theme</span>
-          <ThemeToggle />
-        </div>
-
+      {/* Bottom Section: Profile & Logout */}
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800/80">
         {/* User Card */}
         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5 truncate">
