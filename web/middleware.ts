@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 // Public routes that don't require auth
-const PUBLIC_ROUTES = ['/', '/login', '/mfa', '/api/auth/login', '/api/health']
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/mfa',
+  '/download',
+  '/api/download',
+  '/api/auth/login',
+  '/api/health',
+]
 
 // Route → required roles mapping
 const ROUTE_ROLES: Record<string, string[]> = {
