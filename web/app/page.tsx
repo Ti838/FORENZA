@@ -117,10 +117,15 @@ export default function HomePage() {
         {/* Role Portals Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Select Operational Role Portal
-            </h2>
-            <span className="text-xs text-slate-400 font-mono">7 CERTIFIED RBAC ROLES</span>
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                Operational Workstations & Role Directory
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Access certified role workstations or sign in via central authentication.
+              </p>
+            </div>
+            <span className="text-xs text-blue-600 dark:text-blue-400 font-mono font-bold">7 CERTIFIED RBAC ROLES</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
