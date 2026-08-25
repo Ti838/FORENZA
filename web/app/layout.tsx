@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   },
   description:
     'FORENZA is an enterprise forensic evidence chain-of-custody platform managing the complete lifecycle of forensic evidence with cryptographic verification.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'FORENZA',
+  },
   icons: {
     icon: '/favicon.png',
     apple: '/logo.png',
@@ -50,6 +56,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="dark">
       <head>
         <link rel="icon" href="/favicon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0B0F19" />
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 selection:bg-blue-500 selection:text-white`}
