@@ -1,0 +1,21 @@
+===============================================================
+FORENZA ENTERPRISE FORENSIC WORKSTATION
+END USER LICENSE & COMPLIANCE AGREEMENT (EULA)
+===============================================================
+
+1. AUTHORIZED INSTITUTIONAL USE
+This software is provided for authorized digital forensic evidence
+management, chain-of-custody tracking, and judicial review.
+
+2. CRYPTOGRAPHIC EVIDENCE INTEGRITY
+FORENZA computes deterministic SHA-256 integrity hashes for all
+ingested evidence media and canonical metadata. Users agree not to
+attempt unauthorized modification of local encrypted vaults.
+
+3. ISO/IEC 27037 & NIST SP 800-86 COMPLIANCE
+The application adheres to recognized digital evidence handling
+and forensic laboratory controls.
+
+4. PRIVACY & LOCAL SECURITY
+All local evidence is stored using AES-256 authenticated encryption
+within private application directories.
