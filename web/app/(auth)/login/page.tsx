@@ -14,6 +14,9 @@ import {
   ArrowRight,
   Smartphone,
   Download,
+  ArrowLeft,
+  Home,
+  UserCheck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { getDashboardPath } from '@/lib/rbac'
@@ -36,6 +39,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deviceStatus, setDeviceStatus] = useState<string | null>(null)
+
+  const demoRoles = [
+    { label: 'Officer', email: 'officer@forenza.gov' },
+    { label: 'Vault', email: 'vault@forenza.gov' },
+    { label: 'Lab', email: 'lab@forenza.gov' },
+    { label: 'Judge', email: 'judge@forenza.gov' },
+    { label: 'Supervisor', email: 'supervisor@forenza.gov' },
+    { label: 'Admin', email: 'admin@forenza.gov' },
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,15 +98,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 p-4 transition-colors relative">
-      {/* Top right theme toggle */}
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 p-4 transition-colors relative">
+      {/* Top Header Bar with Home Button on Left & Theme Toggle on Right */}
+      <div className="w-full max-w-5xl mx-auto flex items-center justify-between py-2">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-xs transition-all cursor-pointer"
+        >
+          <Home className="w-4 h-4 text-blue-500" />
+          <span>← Back to Public Website</span>
+        </Link>
+
         <ThemeToggle />
       </div>
 
-      <div className="relative w-full max-w-md">
+      <div className="w-full max-w-md mx-auto my-auto py-6">
         {/* Official Brand Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <ForenzaLogo size="lg" showTagline={true} className="justify-center mb-2" />
         </div>
 
@@ -110,9 +130,33 @@ export default function LoginPage() {
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Sign in to your workstation
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-6">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5">
             All system access and custody interactions are cryptographically recorded.
           </p>
+
+          {/* Quick Demo Role Selector */}
+          <div className="mb-5 p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 space-y-2">
+            <span className="text-[10px] font-mono font-bold text-slate-500 uppercase flex items-center gap-1.5">
+              <UserCheck className="w-3.5 h-3.5 text-blue-500" />
+              <span>QUICK-FILL TEST ROLE:</span>
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {demoRoles.map((r) => (
+                <button
+                  key={r.label}
+                  type="button"
+                  onClick={() => setEmail(r.email)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                    email === r.email
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {error && (
             <div className="flex items-start gap-2.5 p-3.5 rounded-lg mb-6 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-600 dark:text-red-300">
@@ -167,7 +211,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -177,7 +221,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-md shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full mt-2 py-3 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-md shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -208,6 +252,10 @@ export default function LoginPage() {
             </Link>
           </div>
         </div>
+      </div>
+
+      <div className="py-2 text-center text-[11px] font-mono text-slate-400">
+        &copy; {new Date().getFullYear()} FORENZA Enterprise Forensics. All rights reserved.
       </div>
     </div>
   )
