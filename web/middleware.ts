@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-// Public routes — no auth required
+// Public institutional routes — no auth required for public visitors
 const PUBLIC_ROUTES = [
   '/',
+  '/how-it-works',
+  '/platform',
+  '/security',
+  '/technology',
+  '/about',
+  '/faq',
+  '/contact',
+  '/download',
   '/login',
   '/mfa',
-  '/download',
   '/api/auth/login',
   '/api/health',
   '/api/download',
 ]
 
-// Route → required roles mapping (checked after auth)
+// Route → required roles mapping (checked after auth for confidential workstations)
 const ROUTE_ROLES: Record<string, string[]> = {
   '/admin': ['ADMIN'],
   '/supervisor': ['ADMIN', 'SUPERVISOR'],
@@ -26,7 +33,7 @@ const ROUTE_ROLES: Record<string, string[]> = {
 function isPublicRoute(pathname: string): boolean {
   return (
     pathname === '/' ||
-    PUBLIC_ROUTES.some((route) => route !== '/' && pathname.startsWith(route)) ||
+    PUBLIC_ROUTES.some((route) => route !== '/' && (pathname === route || pathname.startsWith(`${route}/`))) ||
     pathname.startsWith('/_next') ||
     pathname.includes('.')
   )
@@ -35,7 +42,7 @@ function isPublicRoute(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Static assets and public routes — skip auth
+  // Static assets and public institutional routes — skip auth
   if (isPublicRoute(pathname)) {
     return NextResponse.next()
   }
@@ -50,7 +57,6 @@ export async function middleware(request: NextRequest) {
 
   // If Supabase is not configured, allow through in local dev
   if (!supabaseUrl || !supabaseKey) {
-    console.warn('[FORENZA] Supabase not configured — skipping auth middleware')
     return response
   }
 
@@ -74,7 +80,7 @@ export async function middleware(request: NextRequest) {
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
-      // Not authenticated — enforce redirect or 401
+      // Not authenticated — enforce redirect to login for confidential workstation hubs
       if (pathname.startsWith('/api/')) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
@@ -87,23 +93,10 @@ export async function middleware(request: NextRequest) {
     response.headers.set('x-user-id', user.id)
     response.headers.set('x-user-email', user.email ?? '')
 
-    // Role-based route protection (lightweight check — full RBAC is in API routes)
-    for (const [routePrefix, allowedRoles] of Object.entries(ROUTE_ROLES)) {
-      if (pathname.startsWith(routePrefix)) {
-        // We do a quick roles DB lookup only for protected page routes (not API)
-        if (!pathname.startsWith('/api/')) {
-          // For pages, we rely on the page itself or a server component to do full RBAC
-          // Middleware here is a first-line defence only
-          break
-        }
-      }
-    }
-
     return response
 
   } catch (err) {
     console.error('[FORENZA] Middleware error:', err)
-    // Graceful degradation — allow through if middleware itself errors
     return response
   }
 }
