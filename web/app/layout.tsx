@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: 'FORENZA',
   },
   icons: {
-    icon: '/favicon.png',
+    icon: '/icon',
     apple: '/logo.png',
   },
   robots: 'noindex, nofollow',
@@ -55,9 +55,35 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <head>
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/icon" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0B0F19" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var stored = localStorage.getItem('forenza-theme');
+                  var isDark = stored === 'dark' || (!stored || stored === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  var root = document.documentElement;
+                  if (stored === 'light') {
+                    root.classList.remove('dark');
+                    root.classList.add('light');
+                    root.style.colorScheme = 'light';
+                  } else if (isDark) {
+                    root.classList.add('dark');
+                    root.classList.remove('light');
+                    root.style.colorScheme = 'dark';
+                  } else {
+                    root.classList.remove('dark');
+                    root.classList.add('light');
+                    root.style.colorScheme = 'light';
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 selection:bg-blue-500 selection:text-white`}

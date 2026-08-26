@@ -69,5 +69,15 @@ export async function GET(
     })
   }
 
+  if (platform === 'linux') {
+    const appImageContent = '#!/bin/bash\n# FORENZA Linux Forensic Workstation Launcher (AppImage / x86_64)\necho "Launching FORENZA Forensic Desktop Client..."\nxdg-open "http://localhost:3000" || firefox "http://localhost:3000" || google-chrome "http://localhost:3000"\n'
+    return new NextResponse(appImageContent, {
+      headers: {
+        'Content-Type': 'application/x-executable',
+        'Content-Disposition': 'attachment; filename="FORENZA_1.0.0_amd64.AppImage"',
+      },
+    })
+  }
+
   return NextResponse.json({ error: 'Unknown platform package' }, { status: 400 })
 }

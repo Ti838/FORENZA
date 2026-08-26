@@ -14,14 +14,18 @@ import {
   ArrowRight,
   RotateCcw,
   Sparkles,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
-type ScanStep = 'SCANNING' | 'VERIFIED_PREVIEW' | 'STORED_SUCCESS'
+type ScanStep = 'INPUT_TOKEN' | 'STORED_SUCCESS'
 
 export default function VaultScanPage() {
-  const [step, setStep] = useState<ScanStep>('SCANNING')
+  const [step, setStep] = useState<ScanStep>('INPUT_TOKEN')
+  const [tokenInput, setTokenInput] = useState('')
+  const [evidenceId, setEvidenceId] = useState('')
   const [locationForm, setLocationForm] = useState({
     vaultId: 'VAULT-01',
     rack: 'RACK-B',
@@ -29,16 +33,65 @@ export default function VaultScanPage() {
     bin: 'BIN-12',
     notes: 'Stored in secure evidence locker.',
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [receiptResult, setReceiptResult] = useState<any>(null)
 
-  const handleSimulateScan = () => {
-    setStep('VERIFIED_PREVIEW')
-    toast.success('QR Handover Token verified. Cryptographic signature validated.')
-  }
-
-  const handleConfirmStorage = (e: React.FormEvent) => {
+  const handleReceiveAndStore = async (e: React.FormEvent) => {
     e.preventDefault()
-    setStep('STORED_SUCCESS')
-    toast.success('Evidence received into vault custody and physical location indexed.')
+    if (!tokenInput.trim() || !evidenceId.trim()) {
+      toast.error('Evidence ID and Handover Token are required')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Step 1: Receive custody transfer via token
+      const receiveRes = await fetch(`/api/evidence/${evidenceId.trim()}/receive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          handover_token: tokenInput.trim(),
+          notes: locationForm.notes,
+        }),
+      })
+      const receiveJson = await receiveRes.json()
+
+      if (!receiveRes.ok) {
+        throw new Error(receiveJson.error ?? 'Custody transfer failed')
+      }
+
+      // Step 2: Record vault physical location
+      const vaultRes = await fetch(`/api/evidence/${evidenceId.trim()}/vault`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          handover_token: tokenInput.trim(),
+          vault_id: locationForm.vaultId,
+          rack: locationForm.rack || undefined,
+          shelf: locationForm.shelf || undefined,
+          bin: locationForm.bin || undefined,
+          notes: locationForm.notes || undefined,
+        }),
+      })
+      const vaultJson = await vaultRes.json()
+
+      setReceiptResult({
+        evidence_id: evidenceId,
+        custody_hash: receiveJson.data?.custody_hash,
+        location: vaultJson.data?.location_label ?? `${locationForm.vaultId} / ${locationForm.rack} / ${locationForm.shelf} / ${locationForm.bin}`,
+      })
+
+      setStep('STORED_SUCCESS')
+      toast.success('Evidence received into vault custody and physical location indexed.')
+    } catch (err: any) {
+      setError(err.message ?? 'Vault intake failed')
+      toast.error(err.message ?? 'Vault intake failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -46,142 +99,119 @@ export default function VaultScanPage() {
       role="VAULT_CUSTODIAN"
       title="Evidence Intake & Location Indexing"
       breadcrumbs={[{ label: 'Home' }, { label: 'Vault Facility', href: '/vault/dashboard' }, { label: 'Scan QR' }]}
-      userName="Sgt. Marcus Rodriguez"
-      badgeNumber="7104"
+      userName="Vault Custodian"
     >
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* STEP 1: SCANNER VIEWFINDER */}
-        {step === 'SCANNING' && (
-          <div className="forenza-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl text-center space-y-6">
-            <div>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                Scan Evidence Handover QR
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Point your scanner or device camera at the officer&apos;s digital handover token
-              </p>
-            </div>
-
-            {/* Scanner Graphic */}
-            <div className="relative w-64 h-64 mx-auto rounded-3xl bg-slate-950 border-2 border-blue-500/50 shadow-2xl flex items-center justify-center overflow-hidden">
-              {/* Scan Laser Animation */}
-              <div className="absolute left-0 right-0 h-0.5 bg-blue-400 shadow-lg shadow-blue-500/80 animate-bounce" />
-
-              <div className="w-44 h-44 border border-dashed border-white/40 rounded-2xl flex items-center justify-center">
-                <ScanLine className="w-16 h-16 text-blue-400 animate-pulse" />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSimulateScan}
-              className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md shadow-blue-600/30 transition-all active:scale-95"
-            >
-              Simulate Successful QR Scan
-            </button>
+        {error && (
+          <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-300">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
-        {/* STEP 2: SCANNED ITEM REVIEW & LOCATION ASSIGNMENT */}
-        {step === 'VERIFIED_PREVIEW' && (
-          <div className="forenza-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-6 animate-in fade-in">
-            {/* Scanned Verification Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    Handover Token Verified
-                  </h3>
-                  <p className="text-xs font-mono text-slate-500">ITEM: EVD-2024-0089 • CASE-2024-041</p>
-                </div>
+        {/* STEP 1: TOKEN / SCAN INPUT & STORAGE FORM */}
+        {step === 'INPUT_TOKEN' && (
+          <div className="forenza-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-6">
+            <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                <ScanLine className="w-5 h-5" />
               </div>
-
-              <StatusBadge status="TRANSFERRED" size="sm" />
-            </div>
-
-            {/* Evidence Metadata Overview */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 text-xs space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <span className="text-slate-500 block">Category:</span>
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
-                    Weapon (Tactical Knife)
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block">Handover Officer:</span>
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
-                    Detective Marcus Vance (#4028)
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between text-[11px] font-mono">
-                <span className="text-slate-500">Cryptographic Seal:</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                  e3b0c442...852b855 (Verified)
-                </span>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Vault Custody Intake & Storage Assignment
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Verify digital handover token, extend the hash chain, and record vault coordinates
+                </p>
               </div>
             </div>
 
-            {/* Storage Indexing Form */}
-            <form onSubmit={handleConfirmStorage} className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-blue-500" />
-                Assign Physical Vault Storage Location
-              </h4>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <form onSubmit={handleReceiveAndStore} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Vault ID *
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+                    Evidence UUID *
                   </label>
                   <input
                     type="text"
                     required
-                    value={locationForm.vaultId}
-                    onChange={(e) => setLocationForm({ ...locationForm, vaultId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Rack
-                  </label>
-                  <input
-                    type="text"
-                    value={locationForm.rack}
-                    onChange={(e) => setLocationForm({ ...locationForm, rack: e.target.value })}
+                    value={evidenceId}
+                    onChange={(e) => setEvidenceId(e.target.value)}
+                    placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                     className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Shelf
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+                    Handover Token (JWT or Scanned QR) *
                   </label>
                   <input
                     type="text"
-                    value={locationForm.shelf}
-                    onChange={(e) => setLocationForm({ ...locationForm, shelf: e.target.value })}
+                    required
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                    placeholder="Paste or scan handover JWT token"
                     className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Bin
-                  </label>
-                  <input
-                    type="text"
-                    value={locationForm.bin}
-                    onChange={(e) => setLocationForm({ ...locationForm, bin: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
-                  />
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mb-3">
+                  <Building2 className="w-4 h-4 text-blue-500" />
+                  Physical Vault Location Coordinates
+                </h4>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                      Vault ID *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={locationForm.vaultId}
+                      onChange={(e) => setLocationForm({ ...locationForm, vaultId: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                      Rack
+                    </label>
+                    <input
+                      type="text"
+                      value={locationForm.rack}
+                      onChange={(e) => setLocationForm({ ...locationForm, rack: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                      Shelf
+                    </label>
+                    <input
+                      type="text"
+                      value={locationForm.shelf}
+                      onChange={(e) => setLocationForm({ ...locationForm, shelf: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                      Bin
+                    </label>
+                    <input
+                      type="text"
+                      value={locationForm.bin}
+                      onChange={(e) => setLocationForm({ ...locationForm, bin: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -197,29 +227,24 @@ export default function VaultScanPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep('SCANNING')}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
-                >
-                  Rescan
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 flex items-center gap-2"
-                >
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Confirm Custody & Store in Vault</span>
-                </button>
-              </div>
+                )}
+                <span>Verify Token & Confirm Vault Storage</span>
+              </button>
             </form>
           </div>
         )}
 
-        {/* STEP 3: STORED SUCCESS CONFIRMATION */}
-        {step === 'STORED_SUCCESS' && (
+        {/* STEP 2: STORED SUCCESS CONFIRMATION */}
+        {step === 'STORED_SUCCESS' && receiptResult && (
           <div className="forenza-card p-8 rounded-3xl border border-emerald-300 dark:border-emerald-800/80 bg-white dark:bg-[#111827] shadow-xl text-center space-y-4 animate-in zoom-in-95">
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <CheckCircle2 className="w-10 h-10" />
@@ -230,18 +255,21 @@ export default function VaultScanPage() {
                 VAULT INTAKE COMPLETED
               </h3>
               <p className="text-xs text-slate-500 mt-1 font-mono">
-                ITEM EVD-2024-0089 SECURED IN VAULT-01 / RACK-B / SHELF-04 / BIN-12
+                LOCATION: {receiptResult.location}
               </p>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-              The custody hash chain has been extended to Vault Custodian Sgt. Rodriguez. GPS transit telemetry has been automatically concluded.
-            </p>
+            {receiptResult.custody_hash && (
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 text-xs font-mono text-emerald-600 dark:text-emerald-400">
+                <span className="text-[10px] text-slate-400 block">NEW CUSTODY HASH</span>
+                <span>{receiptResult.custody_hash}</span>
+              </div>
+            )}
 
             <div className="pt-4 flex justify-center gap-3">
               <button
                 type="button"
-                onClick={() => setStep('SCANNING')}
+                onClick={() => { setStep('INPUT_TOKEN'); setTokenInput(''); setEvidenceId(''); }}
                 className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30"
               >
                 Scan Next Evidence Item

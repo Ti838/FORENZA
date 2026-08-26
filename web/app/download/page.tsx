@@ -8,20 +8,15 @@ import {
   Monitor,
   Smartphone,
   Apple,
-  ShieldCheck,
-  KeyRound,
   CheckCircle2,
-  Copy,
-  ArrowRight,
-  ExternalLink,
-  Laptop,
-  Layers,
   Terminal,
-  Cpu,
-  HardDrive,
-  Sparkles,
   Zap,
   Radio,
+  Layers,
+  Globe,
+  ShieldCheck,
+  ArrowRight,
+  HelpCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -31,12 +26,8 @@ type DetectedOS = 'Windows' | 'macOS' | 'Android' | 'iOS' | 'Linux' | 'Unknown'
 export default function DownloadPage() {
   const [detectedOS, setDetectedOS] = useState<DetectedOS>('Windows')
   const [arch, setArch] = useState<string>('x64 (64-bit)')
-  const [copiedHash, setCopiedHash] = useState<string | null>(null)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
-  const [isInstallable, setIsInstallable] = useState(false)
-  const [installSuccess, setInstallSuccess] = useState(false)
 
-  // Auto-detect User's Operating System & Architecture
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -62,70 +53,60 @@ export default function DownloadPage() {
       setDetectedOS('Windows')
     }
 
-    // PWA Install Prompt Listener
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      setIsInstallable(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-
-    // Check if running in standalone window
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setInstallSuccess(true)
-    }
-
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     }
   }, [])
 
-  // Trigger Native Desktop PWA Installation
   const handlePwaInstall = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
       if (outcome === 'accepted') {
-        toast.success('FORENZA Native Application installed successfully!')
-        setInstallSuccess(true)
+        toast.success('FORENZA Client installed successfully!')
       }
       setDeferredPrompt(null)
-      setIsInstallable(false)
     } else {
       toast.info(
-        'To install as a desktop app: click the Install icon in your browser address bar (top right) or download the Windows setup package below.'
+        'To install as a desktop application: use the Install icon in your browser address bar (top right) or download the native package below.'
       )
     }
   }
 
-  // Direct Windows Launcher Download via API Route
-  const handleDownloadWindows = () => {
-    toast.info('Downloading FORENZA Windows Forensic Setup (.bat)...')
-    window.location.href = '/api/download/windows'
+  const handleDownload = (platform: string, label: string) => {
+    toast.info(`Downloading official FORENZA client for ${label}...`)
+    window.location.href = `/api/download/${platform}`
   }
 
-  // Direct Android APK Download via API Route
-  const handleDownloadAndroid = () => {
-    toast.info('Downloading Android APK Field Client (.apk)...')
-    window.location.href = '/api/download/android'
-  }
-
-  // Direct macOS Download via API Route
-  const handleDownloadMac = () => {
-    toast.info('Downloading macOS Universal Package (.dmg)...')
-    window.location.href = '/api/download/macos'
-  }
-
-  const handleCopyHash = (hash: string) => {
-    navigator.clipboard.writeText(hash)
-    setCopiedHash(hash)
-    toast.success('SHA-256 binary checksum copied to clipboard')
-    setTimeout(() => setCopiedHash(null), 2000)
-  }
+  const comparisonRows = [
+    { capability: 'Authentication & MFA', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Role-Based Access (7 RBAC Tiers)', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Case Management & Search', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Evidence Metadata & Verification', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Native Camera Viewfinder Capture', web: 'SUPPORTED', android: 'FULL (Hardware)', windows: 'SUPPORTED', macos: 'SUPPORTED', linux: 'SUPPORTED' },
+    { capability: 'Hardware GPS Location & Geofence', web: 'SUPPORTED', android: 'FULL (Hardware)', windows: 'PLATFORM-DEP', macos: 'PLATFORM-DEP', linux: 'PLATFORM-DEP' },
+    { capability: 'Offline Emergency Evidence Capture', web: 'PLATFORM-DEP', android: 'FULL (AES Vault)', windows: 'SUPPORTED', macos: 'SUPPORTED', linux: 'SUPPORTED' },
+    { capability: 'AI-Assisted Classification', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Single-Use QR Handover Tokens', web: 'FULL', android: 'FULL (Scanner)', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Dual-Party Chain of Custody', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'In-Transit Telemetry & Decoy Defense', web: 'FULL (HUD)', android: 'FULL (Broadcast)', windows: 'FULL (HUD)', macos: 'FULL (HUD)', linux: 'FULL (HUD)' },
+    { capability: 'Physical Vault Inventory & Indexing', web: 'FULL', android: 'FULL (Scan)', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Forensic Laboratory & Aliquot Tracking', web: 'FULL', android: 'SUPPORTED', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Append-Only Audit Ledger', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Mathematical Integrity Verification', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Judicial Timeline & Dossier Export', web: 'FULL (jsPDF)', android: 'SUPPORTED', windows: 'FULL (jsPDF)', macos: 'FULL (jsPDF)', linux: 'FULL (jsPDF)' },
+    { capability: 'Multi-Mode Theme (Light/Dark/Auto)', web: 'FULL', android: 'FULL', windows: 'FULL', macos: 'FULL', linux: 'FULL' },
+    { capability: 'Local Encrypted Sandbox Storage', web: 'NOT APPLICABLE', android: 'FULL (AES-256)', windows: 'FULL (Encrypted)', macos: 'FULL (Encrypted)', linux: 'FULL (Encrypted)' },
+  ]
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-slate-100 transition-colors font-sans">
       {/* Top Header */}
       <header className="sticky top-0 z-20 h-16 bg-white/90 dark:bg-[#0F1523]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between">
         <ForenzaLogo size="md" showTagline={true} linkToDashboard={true} />
@@ -146,54 +127,62 @@ export default function DownloadPage() {
         </div>
       </header>
 
-      {/* Main Download Hub */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-10">
-        {/* Auto-Detected Device Hero Banner */}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-12">
+        {/* Unified Architecture Header Banner */}
         <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-800 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
-          <div className="relative z-10 max-w-2xl space-y-4">
+          <div className="relative z-10 max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-mono font-bold">
               <Radio className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
-              <span>DETECTED DEVICE: {detectedOS.toUpperCase()} ({arch})</span>
+              <span>DETECTED ENVIRONMENT: {detectedOS.toUpperCase()} ({arch})</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-              Download FORENZA for {detectedOS}
+              ONE SECURE EVIDENCE PLATFORM.<br />MULTIPLE AUTHORIZED CLIENTS.
             </h1>
 
             <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-              We tailored the installation package for your detected <strong>{detectedOS} ({arch})</strong> environment. Install as a standalone native desktop app or download the verified setup executable.
+              Access FORENZA from the client that fits your operational workflow. All platforms connect to the same central database, authentication, SHA-256 evidence ledger, and Row Level Security policies.
             </p>
 
             <div className="flex items-center flex-wrap gap-3 pt-2">
-              {detectedOS === 'Windows' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleDownloadWindows}
-                    className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-blue-600 font-extrabold text-sm shadow-lg shadow-black/10 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Download className="w-5 h-5 text-blue-600" />
-                    <span>Download Windows Setup (.bat / .exe)</span>
-                  </button>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-blue-600 font-extrabold text-sm shadow-lg shadow-black/10 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer"
+              >
+                <Globe className="w-5 h-5 text-blue-600" />
+                <span>Open Web Platform (Direct Access)</span>
+              </Link>
 
-                  <button
-                    type="button"
-                    onClick={handlePwaInstall}
-                    className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md transition-all cursor-pointer"
-                  >
-                    <Zap className="w-4 h-4 text-amber-300" />
-                    <span>Install Native Desktop App (PWA)</span>
-                  </button>
-                </>
+              {detectedOS === 'Windows' && (
+                <button
+                  type="button"
+                  onClick={() => handleDownload('windows', 'Windows')}
+                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Download for Windows (.bat)</span>
+                </button>
+              )}
+
+              {detectedOS === 'Linux' && (
+                <button
+                  type="button"
+                  onClick={() => handleDownload('linux', 'Linux')}
+                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
+                >
+                  <Terminal className="w-5 h-5" />
+                  <span>Download for Linux (.AppImage)</span>
+                </button>
               )}
 
               {detectedOS === 'macOS' && (
                 <button
                   type="button"
-                  onClick={handleDownloadMac}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-blue-600 font-extrabold text-sm shadow-lg shadow-black/10 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer"
+                  onClick={() => handleDownload('macos', 'macOS')}
+                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
                 >
-                  <Apple className="w-5 h-5 text-blue-600" />
+                  <Apple className="w-5 h-5" />
                   <span>Download for macOS (.dmg)</span>
                 </button>
               )}
@@ -201,283 +190,263 @@ export default function DownloadPage() {
               {detectedOS === 'Android' && (
                 <button
                   type="button"
-                  onClick={handleDownloadAndroid}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-emerald-600 font-extrabold text-sm shadow-lg shadow-black/10 hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer"
+                  onClick={() => handleDownload('android', 'Android')}
+                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
                 >
-                  <Smartphone className="w-5 h-5 text-emerald-600" />
-                  <span>Download Field APK (.apk)</span>
+                  <Smartphone className="w-5 h-5" />
+                  <span>Download Android APK</span>
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* 1-Click Instant Desktop Installation Card */}
-        <div className="forenza-card p-5 sm:p-6 rounded-3xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-2xl bg-blue-600 text-white shrink-0 shadow-md shadow-blue-600/30">
-              <Monitor className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                  ⚡ 1-Click Desktop App Installation (Recommended)
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                  Instant
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                Click the <strong>[ 🖥️↓ ] Install App</strong> icon located in your Chrome / Edge address bar (top right next to the Star button). FORENZA will be added to your <strong>Windows Desktop & Start Menu</strong> as a standalone application!
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handlePwaInstall}
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
-          >
-            Launch Install Prompt
-          </button>
-        </div>
-
-        {/* All Certified Platform Packages Grid */}
+        {/* 5 Authorized Client Cards Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                All Certified Platform Releases
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-blue-500" />
+                <span>AUTHORIZED FORENZA CLIENTS</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Select your required operating environment and verify cryptographic checksums.
+                Every client provides full role-based access to the authoritative forensic core.
               </p>
             </div>
             <span className="text-xs text-blue-600 dark:text-blue-400 font-mono font-bold">
-              RULE 902(14) CERTIFIED
+              UNIFIED FORENZA CORE
             </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Windows Package */}
-            <div
-              className={`forenza-card p-6 rounded-3xl border ${
-                detectedOS === 'Windows'
-                  ? 'border-blue-500 shadow-md shadow-blue-500/10'
-                  : 'border-slate-200 dark:border-slate-800'
-              } bg-white dark:bg-[#111827] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-                    <Monitor className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Card 1: Web Platform */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="p-2.5 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                    <Globe className="w-5 h-5" />
                   </div>
-                  {detectedOS === 'Windows' && (
-                    <span className="text-[10px] font-extrabold font-mono uppercase px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
-                      Your Detected OS
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  Windows PC Desktop
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                  Forenza-Forensic-Setup.bat • 48.2 MB
-                </p>
-
-                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Enterprise Features:
+                  <span className="text-[10px] font-mono font-bold text-slate-500 uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+                    Zero Install
                   </span>
-                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Hardware Security Token & Device Binding</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Local SHA-256 Master Hash Calculation</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Full Standalone Window (Zero Browser Bars)</span>
-                    </li>
-                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">FORENZA Web Platform</h3>
+                  <p className="text-xs text-slate-500 font-mono">Secure browser-based FORENZA workspace</p>
+                </div>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Case Management</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Evidence Management & Hashes</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Chain of Custody & Audit</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Laboratory Workflow</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Judicial Review & Court Dossier</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Full System Administration</span></div>
                 </div>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
-                <button
-                  type="button"
-                  onClick={handleDownloadWindows}
-                  className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+              <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                <Link
+                  href="/login"
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download Windows Installer (.bat)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePwaInstall}
-                  className="w-full h-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 hover:border-blue-500 transition-all cursor-pointer"
-                >
-                  <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Install as Native App (PWA)</span>
-                </button>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>OPEN WEB PLATFORM</span>
+                </Link>
               </div>
             </div>
 
-            {/* Android Package */}
-            <div
-              className={`forenza-card p-6 rounded-3xl border ${
-                detectedOS === 'Android'
-                  ? 'border-emerald-500 shadow-md shadow-emerald-500/10'
-                  : 'border-slate-200 dark:border-slate-800'
-              } bg-white dark:bg-[#111827] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
-                    <Smartphone className="w-6 h-6" />
+            {/* Card 2: Android */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                    <Smartphone className="w-5 h-5" />
                   </div>
                   {detectedOS === 'Android' && (
-                    <span className="text-[10px] font-extrabold font-mono uppercase px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                      Your Detected OS
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                      Your OS
                     </span>
                   )}
                 </div>
-
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  Android Field Client
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                  forenza-field-arm64-v8a.apk • 26.8 MB
-                </p>
-
-                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Field Capabilities:
-                  </span>
-                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Haversine GPS Geofence Radar HUD (±3m)</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Edge AI Object Classifier (Knife, Weapon)</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Single-Use 15-min QR Handover Tokens</span>
-                    </li>
-                  </ul>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">FORENZA Android</h3>
+                  <p className="text-xs text-slate-500 font-mono">Field-optimized FORENZA application</p>
+                </div>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Full Role-Based FORENZA Access</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Native Camera & Hardware GPS</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Offline Evidence Capture (AES-256)</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Single-Use QR Scanner & Handovers</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Authorized Transit Telemetry</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Idempotent Background Sync</span></div>
                 </div>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+              <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
                 <button
                   type="button"
-                  onClick={handleDownloadAndroid}
-                  className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                  onClick={() => handleDownload('android', 'Android')}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download Android APK</span>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>DOWNLOAD ANDROID APP</span>
                 </button>
               </div>
             </div>
 
-            {/* macOS Package */}
-            <div
-              className={`forenza-card p-6 rounded-3xl border ${
-                detectedOS === 'macOS'
-                  ? 'border-indigo-500 shadow-md shadow-indigo-500/10'
-                  : 'border-slate-200 dark:border-slate-800'
-              } bg-white dark:bg-[#111827] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
-                    <Apple className="w-6 h-6" />
+            {/* Card 3: Windows */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="p-2.5 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                    <Monitor className="w-5 h-5" />
                   </div>
-                  {detectedOS === 'macOS' && (
-                    <span className="text-[10px] font-extrabold font-mono uppercase px-2.5 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
-                      Your Detected OS
+                  {detectedOS === 'Windows' && (
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                      Your OS
                     </span>
                   )}
                 </div>
-
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  macOS Judicial Workstation
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                  Forenza-Universal-macOS.dmg • 52.1 MB
-                </p>
-
-                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Mac Capabilities:
-                  </span>
-                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Apple Silicon M-Series Neural Acceleration</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Secure Enclave Hardware Key Signing</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>Certified Rule 902 jsPDF Dossier Export</span>
-                    </li>
-                  </ul>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">FORENZA for Windows</h3>
+                  <p className="text-xs text-slate-500 font-mono">Full desktop FORENZA application</p>
+                </div>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Case & Evidence Management</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Chain of Custody & Vault Indexing</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Laboratory Workflow & Aliquots</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Audit, Integrity & Security Center</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Judicial Review & Court Dossier</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Hardware Device Token Binding</span></div>
                 </div>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+              <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
                 <button
                   type="button"
-                  onClick={handleDownloadMac}
-                  className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                  onClick={() => handleDownload('windows', 'Windows')}
+                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download for macOS (.dmg)</span>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>DOWNLOAD FOR WINDOWS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 4: macOS */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                    <Apple className="w-5 h-5" />
+                  </div>
+                  {detectedOS === 'macOS' && (
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                      Your OS
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">FORENZA for macOS</h3>
+                  <p className="text-xs text-slate-500 font-mono">Full desktop FORENZA application</p>
+                </div>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Case & Evidence Management</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Chain of Custody & Vault Indexing</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Laboratory Workflow & Aliquots</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Audit, Integrity & Security Center</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Judicial Review & Court Dossier</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Apple Silicon & Intel Universal Binary</span></div>
+                </div>
+              </div>
+              <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => handleDownload('macos', 'macOS')}
+                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>DOWNLOAD FOR macOS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 5: Linux */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400">
+                    <Terminal className="w-5 h-5" />
+                  </div>
+                  {detectedOS === 'Linux' && (
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                      Your OS
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">FORENZA for Linux</h3>
+                  <p className="text-xs text-slate-500 font-mono">Full desktop FORENZA application</p>
+                </div>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Case & Evidence Management</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Chain of Custody & Vault Indexing</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Laboratory Workflow & Aliquots</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Audit, Integrity & Security Center</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Judicial Review & Court Dossier</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Standalone Portable .AppImage</span></div>
+                </div>
+              </div>
+              <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => handleDownload('linux', 'Linux')}
+                  className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>DOWNLOAD FOR LINUX</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Developer / CLI Quick Run Guide */}
-        <div className="forenza-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-              <Terminal className="w-5 h-5" />
-            </div>
+        {/* Platform Capability Comparison Matrix */}
+        <div className="space-y-4 pt-6">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                Developer & Direct CLI Execution
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-500" />
+                <span>CROSS-PLATFORM CAPABILITY COMPARISON</span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                You can also run the complete multi-platform codebase in <code>/mobile</code> directly on your PC:
+                Capabilities depend on hardware sensors and operating environment, sharing the same cryptographic backend.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800">
-              <span className="text-slate-400 text-[10px] block mb-1"># Windows PC App</span>
-              <p className="text-blue-600 dark:text-blue-400 font-bold">flutter run -d windows</p>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800">
-              <span className="text-slate-400 text-[10px] block mb-1"># Android Smartphone</span>
-              <p className="text-emerald-600 dark:text-emerald-400 font-bold">flutter run -d android</p>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800">
-              <span className="text-slate-400 text-[10px] block mb-1"># Web Workstation</span>
-              <p className="text-purple-600 dark:text-purple-400 font-bold">npm run dev</p>
-            </div>
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F1523]">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-slate-50 dark:bg-[#0B0F19] text-[11px] font-mono text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="p-3.5 font-bold">CAPABILITY</th>
+                  <th className="p-3.5 font-bold">WEB</th>
+                  <th className="p-3.5 font-bold">ANDROID</th>
+                  <th className="p-3.5 font-bold">WINDOWS</th>
+                  <th className="p-3.5 font-bold">macOS</th>
+                  <th className="p-3.5 font-bold">LINUX</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+                {comparisonRows.map((row) => (
+                  <tr key={row.capability} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                    <td className="p-3.5 font-sans font-semibold text-slate-800 dark:text-slate-200">{row.capability}</td>
+                    <td className="p-3.5"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.web.includes('FULL') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{row.web}</span></td>
+                    <td className="p-3.5"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.android.includes('FULL') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{row.android}</span></td>
+                    <td className="p-3.5"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.windows.includes('FULL') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{row.windows}</span></td>
+                    <td className="p-3.5"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.macos.includes('FULL') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{row.macos}</span></td>
+                    <td className="p-3.5"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.linux.includes('FULL') ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{row.linux}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>

@@ -52,11 +52,15 @@ export type Permission =
   | 'audit:read_security_events'
   // Admin
   | 'admin:create_user'
+  | 'admin:manage_users'
   | 'admin:manage_roles'
+  | 'admin:manage_devices'
   | 'admin:approve_device'
   | 'admin:revoke_device'
   | 'admin:read_all'
   | 'admin:system_health'
+  // Judicial (unified read permission used by new routes)
+  | 'judicial:read'
 
 const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
   ADMIN: [
@@ -66,8 +70,11 @@ const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     'telemetry:read',
     'vault:read',
     'lab:read',
+    'judicial:read', 'judicial:read_case', 'judicial:read_evidence',
+    'judicial:read_timeline', 'judicial:read_map', 'judicial:verify_integrity', 'judicial:generate_dossier',
     'audit:read', 'audit:read_security_events',
-    'admin:create_user', 'admin:manage_roles', 'admin:approve_device',
+    'admin:create_user', 'admin:manage_users', 'admin:manage_roles',
+    'admin:manage_devices', 'admin:approve_device',
     'admin:revoke_device', 'admin:read_all', 'admin:system_health',
     'override:approve',
   ],
@@ -87,6 +94,7 @@ const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     'telemetry:read',
     'vault:read',
     'lab:read',
+    'judicial:read',
     'audit:read',
     'override:approve',
   ],
@@ -104,13 +112,17 @@ const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     'lab:upload_report', 'lab:read',
   ],
   JUDGE: [
+    'judicial:read',
     'judicial:read_case', 'judicial:read_evidence', 'judicial:read_timeline',
     'judicial:read_map', 'judicial:verify_integrity', 'judicial:generate_dossier',
     'telemetry:read',
+    'evidence:read', 'evidence:read_media', 'evidence:verify_integrity',
+    'lab:read',
   ],
   AUDITOR: [
     'case:read',
     'evidence:read', 'evidence:verify_integrity',
+    'judicial:read',
     'audit:read', 'audit:read_security_events',
     'vault:read', 'lab:read',
   ],

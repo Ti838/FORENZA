@@ -10,21 +10,21 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { sha256 } from './crypto/evidence-hash'
 
-const QR_TOKEN_TTL = parseInt(process.env.QR_TOKEN_TTL_SECONDS ?? '86400', 10)
-const HANDOVER_TOKEN_TTL = parseInt(process.env.HANDOVER_TOKEN_TTL_SECONDS ?? '900', 10)
+const QR_TOKEN_TTL = parseInt(process.env.FORENZA_QR_TOKEN_TTL_SECONDS ?? '86400', 10)
+const HANDOVER_TOKEN_TTL = parseInt(process.env.FORENZA_HANDOVER_TOKEN_TTL_SECONDS ?? '900', 10)
 
 function getQrSecret(): Uint8Array {
-  const secret = process.env.QR_TOKEN_SECRET
+  const secret = process.env.FORENZA_QR_JWT_SECRET
   if (!secret || secret.length < 32) {
-    throw new Error('QR_TOKEN_SECRET must be at least 32 characters')
+    throw new Error('FORENZA_QR_JWT_SECRET must be at least 32 characters')
   }
   return new TextEncoder().encode(secret)
 }
 
 function getHandoverSecret(): Uint8Array {
-  const secret = process.env.HANDOVER_TOKEN_SECRET
+  const secret = process.env.FORENZA_HANDOVER_JWT_SECRET
   if (!secret || secret.length < 32) {
-    throw new Error('HANDOVER_TOKEN_SECRET must be at least 32 characters')
+    throw new Error('FORENZA_HANDOVER_JWT_SECRET must be at least 32 characters')
   }
   return new TextEncoder().encode(secret)
 }

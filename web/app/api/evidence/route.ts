@@ -10,6 +10,55 @@ const registerEvidenceSchema = z.object({
   evidence_number: z.string().min(1).regex(/^[A-Z0-9\-]+$/, 'Evidence number must be uppercase alphanumeric with hyphens'),
 })
 
+// GET /api/evidence — List evidence items
+export async function GET(request: NextRequest) {
+  const supabase = await createClient()
+  const adminClient = createAdminClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: userRoles } = await adminClient.from('user_roles').select('role').eq('user_id', user.id)
+  const roles = userRoles?.map((r) => r.role as any) ?? []
+
+  if (!hasPermission(roles, 'evidence:read')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const url = new URL(request.url)
+  const page = parseInt(url.searchParams.get('page') ?? '1', 10)
+  const perPage = Math.min(parseInt(url.searchParams.get('per_page') ?? '20', 10), 100)
+  const caseId = url.searchParams.get('case_id')
+  const status = url.searchParams.get('status')
+  const holderId = url.searchParams.get('current_holder_id')
+
+  let query = adminClient
+    .from('evidence')
+    .select(`
+      id, case_id, evidence_number, status, master_hash, current_holder_id,
+      captured_at, capture_latitude, capture_longitude, geofence_verified, created_at,
+      case:cases!evidence_case_id_fkey(id, case_number, title),
+      current_holder:profiles!evidence_current_holder_id_fkey(id, full_name, badge_number),
+      classification:evidence_classifications(final_category, final_object, classification_method, ai_confidence)
+    `, { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range((page - 1) * perPage, page * perPage - 1)
+
+  if (caseId) query = query.eq('case_id', caseId)
+  if (status) query = query.eq('status', status)
+  if (holderId) query = query.eq('current_holder_id', holderId)
+
+  const { data, error, count } = await query
+  if (error) return NextResponse.json({ error: 'Failed to fetch evidence' }, { status: 500 })
+
+  const formattedData = (data ?? []).map((e: any) => ({
+    ...e,
+    classification: Array.isArray(e.classification) ? e.classification[0] : e.classification,
+  }))
+
+  return NextResponse.json({ data: formattedData, total: count ?? 0, page, per_page: perPage })
+}
+
 // POST /api/evidence — Register a new evidence item
 export async function POST(request: NextRequest) {
   const { ip_address, user_agent, request_id } = extractRequestMeta(request)

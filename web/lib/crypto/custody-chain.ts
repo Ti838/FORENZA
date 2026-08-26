@@ -125,8 +125,8 @@ export async function verifyCustodyChain(
     // Extract the event input from stored canonical_data
     // IMPORTANT: Use the canonical_data to reconstruct the exact event input
     // that was used to compute the hash — NOT the DB row's created_at
-    const storedCanonical = event.canonical_data as Record<string, unknown>
-    const eventTimestamp = (storedCanonical.timestamp as string) ?? event.created_at
+    const storedCanonical = event.canonical_data as Record<string, unknown> | undefined
+    const eventTimestamp = (storedCanonical?.timestamp as string) ?? event.created_at
 
     const eventInput: CustodyEventInput = {
       custody_id: event.id,

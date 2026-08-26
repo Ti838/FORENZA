@@ -77,9 +77,9 @@ export default function LoginPage() {
       // Navigate to role-based dashboard
       const dashPath = getDashboardPath(data.user.roles as AppRole[])
       router.push(dashPath)
-    } catch {
-      // For local prototype demonstration if backend mock
-      router.push('/supervisor/dashboard')
+    } catch (err) {
+      setError('Network error — could not reach authentication service. Please check your connection.')
+      console.error('[FORENZA LOGIN]', err)
     } finally {
       setLoading(false)
     }

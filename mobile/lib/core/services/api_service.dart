@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../constants/app_config.dart';
 
 class ApiService {
   // Default base URL pointing to the Next.js / Supabase backend
-  // For Windows PC desktop / Web: localhost:3000
   // For Android emulator: 10.0.2.2:3000
-  static String baseUrl = 'http://localhost:3000/api';
+  // For physical device: use your machine's LAN IP e.g. 192.168.0.6:3000
+  static String baseUrl = AppConfig.defaultApiBaseUrl;
   static String? authToken;
 
   static void setBaseUrl(String url) {

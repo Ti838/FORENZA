@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AppShell } from '@/components/layout/AppShell'
 import { QRCard } from '@/components/forensic/QRCard'
 import {
@@ -12,19 +13,88 @@ import {
   CheckCircle2,
   AlertTriangle,
   Fingerprint,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-export default function OfficerTransferPage() {
-  const [selectedEvidence, setSelectedEvidence] = useState('EVD-2024-0089')
-  const [handoverToken, setHandoverToken] = useState<string | null>(null)
-  const [notes, setNotes] = useState('')
+interface EvidenceOption {
+  id: string
+  evidence_number: string
+  status: string
+  case?: { case_number: string }
+  classification?: { final_category?: string; final_object?: string }
+}
 
-  const handleGenerateHandover = () => {
-    // Generate signed handover token for custody transfer
-    const fakeToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJqdGkiOiJoYW5kb3Zlci04ODkiLCJzZW5kZXIiOiJ1c2VyLTQwMjgiLCJ0eXBlIjoiQ1VTVE9EWV9IQU5ET1ZFUiIsImlhdCI6MTcwNjAwMDAwMCwiZXhwIjoxNzA2MDAwOTAwfQ.transfer_signature`
-    setHandoverToken(fakeToken)
-    toast.success('Single-use custody handover token generated. Valid for 15 minutes.')
+function OfficerTransferContent() {
+  const searchParams = useSearchParams()
+  const initialEvidenceId = searchParams.get('evidence_id') ?? ''
+
+  const [evidenceList, setEvidenceList] = useState<EvidenceOption[]>([])
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState(initialEvidenceId)
+  const [handoverToken, setHandoverToken] = useState<string | null>(null)
+  const [tokenExpiresAt, setTokenExpiresAt] = useState<string | null>(null)
+  const [notes, setNotes] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchHoldings = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch('/api/evidence?per_page=50')
+        if (res.ok) {
+          const json = await res.json()
+          const items: EvidenceOption[] = (json.data ?? []).filter(
+            (e: any) => ['SEALED', 'IN_TRANSIT', 'TRANSFERRED'].includes(e.status)
+          )
+          setEvidenceList(items)
+          if (!selectedEvidenceId && items.length > 0) {
+            setSelectedEvidenceId(items[0].id)
+          }
+        }
+      } catch (err) {
+        console.error('[FORENZA TRANSFER]', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchHoldings()
+  }, [])
+
+  const selectedEvidence = evidenceList.find((e) => e.id === selectedEvidenceId)
+
+  const handleGenerateHandover = async () => {
+    if (!selectedEvidenceId) {
+      toast.error('Please select an evidence item first')
+      return
+    }
+
+    setGenerating(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/evidence/${selectedEvidenceId}/transfer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes }),
+      })
+      const json = await res.json()
+
+      if (!res.ok) {
+        throw new Error(json.error ?? 'Failed to generate transfer token')
+      }
+
+      setHandoverToken(json.data.handover_token)
+      setTokenExpiresAt(json.data.expires_at)
+      toast.success('Single-use custody handover token generated. Valid for 15 minutes.')
+    } catch (err: any) {
+      setError(err.message ?? 'Token generation failed')
+      toast.error(err.message ?? 'Transfer initiation failed')
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (
@@ -32,8 +102,6 @@ export default function OfficerTransferPage() {
       role="INVESTIGATING_OFFICER"
       title="Custody Transfer & Handover"
       breadcrumbs={[{ label: 'Home' }, { label: 'Officer Desk', href: '/officer/dashboard' }, { label: 'Custody Handover' }]}
-      userName="Detective Marcus Vance"
-      badgeNumber="4028"
     >
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="forenza-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-6">
@@ -51,20 +119,41 @@ export default function OfficerTransferPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-300">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
           {!handoverToken ? (
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                   Select Evidence in Your Current Possession *
                 </label>
-                <select
-                  value={selectedEvidence}
-                  onChange={(e) => setSelectedEvidence(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
-                >
-                  <option value="EVD-2024-0089">EVD-2024-0089 • Weapon (Tactical Knife) • CASE-2024-041</option>
-                  <option value="EVD-2024-0091">EVD-2024-0091 • Document (Financial Ledger) • CASE-2024-041</option>
-                </select>
+                {loading ? (
+                  <div className="p-3 text-xs text-slate-500 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Loading available evidence items…</span>
+                  </div>
+                ) : evidenceList.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-300">
+                    No sealed evidence items currently available for transfer. Capture and seal evidence first.
+                  </div>
+                ) : (
+                  <select
+                    value={selectedEvidenceId}
+                    onChange={(e) => setSelectedEvidenceId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
+                  >
+                    {evidenceList.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.evidence_number} • {e.classification?.final_category ?? 'Item'} • {e.case?.case_number ?? 'Case'} ({e.status})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -75,7 +164,7 @@ export default function OfficerTransferPage() {
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Handing over to Central Evidence Vault intake officer Sgt. Rodriguez."
+                  placeholder="e.g. Handing over to Central Evidence Vault intake officer or Lab Analyst."
                   className="w-full px-3.5 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"
                 />
               </div>
@@ -89,10 +178,15 @@ export default function OfficerTransferPage() {
 
               <button
                 type="button"
+                disabled={generating || evidenceList.length === 0}
                 onClick={handleGenerateHandover}
-                className="w-full py-3.5 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-md shadow-blue-600/30 flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-md shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <Key className="w-4 h-4" />
+                {generating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Key className="w-4 h-4" />
+                )}
                 <span>Generate Handover QR Token</span>
               </button>
             </div>
@@ -100,13 +194,13 @@ export default function OfficerTransferPage() {
             <div className="space-y-6 text-center animate-in zoom-in-95">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-xs font-bold font-mono">
                 <Clock className="w-3.5 h-3.5" />
-                <span>HANDOVER TOKEN EXPIRES IN 14:48</span>
+                <span>SINGLE-USE HANDOVER TOKEN ACTIVE</span>
               </div>
 
               <QRCard
-                evidenceNumber={selectedEvidence}
-                evidenceId="550e8400-e29b-41d4-a716-446655440000"
-                caseNumber="CASE-2024-041"
+                evidenceNumber={selectedEvidence?.evidence_number ?? selectedEvidenceId}
+                evidenceId={selectedEvidenceId}
+                caseNumber={selectedEvidence?.case?.case_number ?? 'CASE'}
                 qrToken={handoverToken}
                 status="TRANSFERRED"
               />
@@ -127,5 +221,20 @@ export default function OfficerTransferPage() {
         </div>
       </div>
     </AppShell>
+  )
+}
+
+export default function OfficerTransferPage() {
+  return (
+    <Suspense fallback={
+      <AppShell role="INVESTIGATING_OFFICER" title="Custody Transfer" breadcrumbs={[{ label: 'Home' }, { label: 'Transfer' }]}>
+        <div className="p-12 text-center text-slate-500 flex flex-col items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+          <span>Loading transfer holdings…</span>
+        </div>
+      </AppShell>
+    }>
+      <OfficerTransferContent />
+    </Suspense>
   )
 }

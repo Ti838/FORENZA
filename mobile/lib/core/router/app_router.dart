@@ -7,9 +7,8 @@ import '../../screens/officer/capture_screen.dart';
 import '../../screens/officer/ai_review_screen.dart';
 import '../../screens/officer/manual_classification_screen.dart';
 import '../../screens/officer/sealed_evidence_screen.dart';
-import '../../screens/officer/transfer_screen.dart';
-import '../../screens/vault/vault_dashboard_screen.dart';
-import '../../screens/vault/vault_scan_screen.dart';
+import '../../screens/officer/emergency_capture_screen.dart';
+import '../../screens/sync/sync_center_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/officer/dashboard',
@@ -29,6 +28,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/officer/capture',
       builder: (context, state) => const CaptureScreen(),
+    ),
+    GoRoute(
+      path: '/officer/emergency',
+      builder: (context, state) => const EmergencyCaptureScreen(),
+    ),
+    GoRoute(
+      path: '/sync/center',
+      builder: (context, state) => const SyncCenterScreen(),
     ),
     GoRoute(
       path: '/officer/ai_review',

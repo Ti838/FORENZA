@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import {
@@ -17,52 +17,93 @@ import {
   HardDrive,
   Cpu,
   RefreshCw,
+  Clock,
+  AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-export default function AdminDashboard() {
-  const [devices, setDevices] = useState([
-    {
-      id: 'dev-001',
-      user: 'Detective Marcus Vance',
-      badge: '4028',
-      platform: 'iOS (iPhone 15 Pro)',
-      identifier: 'web_9a4f8812c44e991b',
-      status: 'APPROVED',
-      lastSeen: '4 minutes ago',
-    },
-    {
-      id: 'dev-002',
-      user: 'Officer Sarah Chen',
-      badge: '3910',
-      platform: 'Android (Samsung Galaxy S24)',
-      identifier: 'web_33bf1992019ab921',
-      status: 'PENDING',
-      lastSeen: '12 minutes ago',
-    },
-    {
-      id: 'dev-003',
-      user: 'Dr. Aris Thorne',
-      badge: 'LAB-882',
-      platform: 'Web Workstation (macOS)',
-      identifier: 'web_88f01a882bb81944',
-      status: 'APPROVED',
-      lastSeen: '1 hour ago',
-    },
-  ])
+interface DeviceRow {
+  id: string
+  user_id: string
+  device_name: string
+  device_identifier: string
+  platform: string
+  status: 'PENDING' | 'APPROVED' | 'REVOKED'
+  last_seen_at: string | null
+  created_at: string
+  profile?: { full_name: string; email: string; badge_number: string | null }
+}
 
-  const handleApproveDevice = (id: string, user: string) => {
-    setDevices((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: 'APPROVED' } : d))
-    )
-    toast.success(`Device for ${user} approved. Authentication token activated.`)
+interface Stats {
+  personnel: { total: number; active: number }
+  devices: { total: number; pending: number; approved: number }
+  cases: { total: number; active: number }
+  evidence: { total: number; sealed: number }
+}
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [devices, setDevices] = useState<DeviceRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const [statsRes, devicesRes] = await Promise.all([
+        fetch('/api/admin/stats'),
+        fetch('/api/admin/devices?per_page=20'),
+      ])
+
+      if (statsRes.ok) {
+        const s = await statsRes.json()
+        setStats(s.data)
+      }
+      if (devicesRes.ok) {
+        const d = await devicesRes.json()
+        setDevices(d.data ?? [])
+      }
+    } catch (err) {
+      console.error('[FORENZA ADMIN]', err)
+      toast.error('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleRevokeDevice = (id: string, user: string) => {
-    setDevices((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: 'REVOKED' } : d))
-    )
-    toast.error(`Device for ${user} revoked. Session terminated immediately.`)
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const handleDeviceAction = async (deviceId: string, action: 'APPROVE' | 'REVOKE', name: string) => {
+    setActionLoading(deviceId)
+    try {
+      const res = await fetch('/api/admin/devices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ device_id: deviceId, action }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error ?? 'Action failed')
+        return
+      }
+      setDevices((prev) =>
+        prev.map((d) => (d.id === deviceId ? { ...d, status: data.data.new_status } : d))
+      )
+      toast.success(
+        action === 'APPROVE'
+          ? `Device for ${name} approved. Token activated.`
+          : `Device for ${name} revoked. Session terminated.`
+      )
+      // Refresh stats
+      const statsRes = await fetch('/api/admin/stats')
+      if (statsRes.ok) { const s = await statsRes.json(); setStats(s.data) }
+    } catch (err) {
+      toast.error('Network error — action failed')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   return (
@@ -70,9 +111,6 @@ export default function AdminDashboard() {
       role="ADMIN"
       title="System Administration & Security Infrastructure"
       breadcrumbs={[{ label: 'Home' }, { label: 'Admin Command' }]}
-      userName="Chief Architect Admin"
-      userEmail="admin@forenza.gov"
-      badgeNumber="ADM-01"
     >
       <div className="space-y-6">
         {/* KPI Stats */}
@@ -82,9 +120,11 @@ export default function AdminDashboard() {
               Total Personnel
             </span>
             <h3 className="text-2xl font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-1">
-              48
+              {loading ? '—' : stats?.personnel.total ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">7 RBAC Role Profiles</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {stats?.personnel.active ?? '—'} active accounts
+            </p>
           </div>
 
           <div className="forenza-card p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827]">
@@ -92,9 +132,11 @@ export default function AdminDashboard() {
               Approved Devices
             </span>
             <h3 className="text-2xl font-extrabold font-mono text-blue-600 dark:text-blue-400 mt-1">
-              34
+              {loading ? '—' : stats?.devices.approved ?? 0}
             </h3>
-            <p className="text-[11px] text-amber-600 font-semibold mt-0.5">1 Pending Approval</p>
+            <p className={`text-[11px] font-semibold mt-0.5 ${(stats?.devices.pending ?? 0) > 0 ? 'text-amber-600' : 'text-slate-500'}`}>
+              {loading ? '—' : `${stats?.devices.pending ?? 0} pending approval`}
+            </p>
           </div>
 
           <div className="forenza-card p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827]">
@@ -102,25 +144,27 @@ export default function AdminDashboard() {
               Active Cases
             </span>
             <h3 className="text-2xl font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-1">
-              24
+              {loading ? '—' : stats?.cases.active ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Under investigation</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              of {stats?.cases.total ?? '—'} total
+            </p>
           </div>
 
           <div className="forenza-card p-5 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/40 dark:bg-emerald-950/20">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-              Database Uptime
+              Evidence Sealed
             </span>
             <h3 className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
-              99.99%
+              {loading ? '—' : stats?.evidence.sealed ?? 0}
             </h3>
             <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
-              Append-only triggers active
+              of {stats?.evidence.total ?? '—'} total items
             </p>
           </div>
         </div>
 
-        {/* System Infrastructure Health Telemetry */}
+        {/* System Infrastructure Health */}
         <div className="forenza-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -129,133 +173,118 @@ export default function AdminDashboard() {
             </h3>
             <span className="badge-verified">ALL SYSTEMS OPERATIONAL</span>
           </div>
-
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
-              <Server className="w-5 h-5 text-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100 block">Core API</span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
-                  18ms latency
-                </span>
+            {[
+              { icon: Server, label: 'Core API', status: 'NEXT.js 16' },
+              { icon: Database, label: 'Supabase DB', status: 'Healthy • RLS' },
+              { icon: HardDrive, label: 'Encrypted Vault', status: 'Storage Active' },
+              { icon: Cpu, label: 'AI Inference', status: 'ONNX Engine' },
+              { icon: ShieldCheck, label: 'Audit Logs', status: 'Append-only' },
+            ].map(({ icon: Icon, label, status }) => (
+              <div key={label} className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
+                <Icon className="w-5 h-5 text-emerald-500 shrink-0" />
+                <div>
+                  <span className="font-bold text-slate-900 dark:text-slate-100 block">{label}</span>
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">{status}</span>
+                </div>
               </div>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
-              <Database className="w-5 h-5 text-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100 block">Supabase DB</span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
-                  Healthy • RLS
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
-              <HardDrive className="w-5 h-5 text-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100 block">Encrypted Vault</span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
-                  2.4 TB free
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
-              <Cpu className="w-5 h-5 text-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100 block">AI Inference</span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
-                  ONNX Engine
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100 block">Auto Backups</span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
-                  Continuous
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Approved Device Binding Security Table */}
+        {/* Device Management Table — real data */}
         <div className="forenza-card rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] overflow-hidden shadow-xs">
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-blue-500" />
               Device Binding & Hardware Token Management
             </h3>
-            <span className="text-xs text-slate-500 font-mono">MANDATORY DEVICE BINDING</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-mono">MANDATORY DEVICE BINDING</span>
+              <button
+                type="button"
+                onClick={fetchData}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+                title="Refresh"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="p-3.5">Personnel</th>
-                  <th className="p-3.5">Hardware Platform</th>
-                  <th className="p-3.5">Device Identifier Token</th>
-                  <th className="p-3.5">Status</th>
-                  <th className="p-3.5">Last Active</th>
-                  <th className="p-3.5 text-right">Security Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200 font-medium">
-                {devices.map((d) => (
-                  <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="p-3.5">
-                      <span className="font-bold text-slate-900 dark:text-slate-100 block">
-                        {d.user}
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-500">Badge #{d.badge}</span>
-                    </td>
-                    <td className="p-3.5">{d.platform}</td>
-                    <td className="p-3.5 font-mono text-[11px] text-slate-500">{d.identifier}</td>
-                    <td className="p-3.5">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                          d.status === 'APPROVED'
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                            : d.status === 'PENDING'
-                            ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                            : 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300'
-                        }`}
-                      >
-                        {d.status}
-                      </span>
-                    </td>
-                    <td className="p-3.5 font-mono text-slate-500">{d.lastSeen}</td>
-                    <td className="p-3.5 text-right">
-                      {d.status === 'PENDING' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleApproveDevice(d.id, d.user)}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Approve</span>
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleRevokeDevice(d.id, d.user)}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                        >
-                          <XCircle className="w-3.5 h-3.5" />
-                          <span>Revoke</span>
-                        </button>
-                      )}
-                    </td>
+          {loading ? (
+            <div className="p-8 text-center text-slate-500 text-sm">Loading device registry...</div>
+          ) : devices.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-sm">No devices registered.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="p-3.5">Personnel</th>
+                    <th className="p-3.5">Platform</th>
+                    <th className="p-3.5">Device Identifier</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5">Last Active</th>
+                    <th className="p-3.5 text-right">Security Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200 font-medium">
+                  {devices.map((d) => (
+                    <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="p-3.5">
+                        <span className="font-bold text-slate-900 dark:text-slate-100 block">
+                          {d.profile?.full_name ?? 'Unknown'}
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-500">
+                          Badge #{d.profile?.badge_number ?? 'N/A'}
+                        </span>
+                      </td>
+                      <td className="p-3.5">{d.device_name} ({d.platform})</td>
+                      <td className="p-3.5 font-mono text-[11px] text-slate-500">{d.device_identifier.substring(0, 24)}…</td>
+                      <td className="p-3.5">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                          d.status === 'APPROVED' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                          : d.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
+                          : 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300'
+                        }`}>
+                          {d.status}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-mono text-slate-500 text-[11px]">
+                        {d.last_seen_at ? new Date(d.last_seen_at).toLocaleString() : 'Never'}
+                      </td>
+                      <td className="p-3.5 text-right">
+                        {d.status === 'PENDING' ? (
+                          <button
+                            type="button"
+                            disabled={actionLoading === d.id}
+                            onClick={() => handleDeviceAction(d.id, 'APPROVE', d.profile?.full_name ?? 'user')}
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs disabled:opacity-50"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Approve</span>
+                          </button>
+                        ) : d.status === 'APPROVED' ? (
+                          <button
+                            type="button"
+                            disabled={actionLoading === d.id}
+                            onClick={() => handleDeviceAction(d.id, 'REVOKE', d.profile?.full_name ?? 'user')}
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-50"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>Revoke</span>
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 font-mono">Revoked</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </AppShell>
