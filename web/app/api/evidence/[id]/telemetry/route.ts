@@ -107,7 +107,25 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   const allowedRoles = ['ADMIN', 'SUPERVISOR', 'JUDGE', 'AUDITOR', 'VAULT_CUSTODIAN', 'LAB_ANALYST']
   if (!roles.some((r: string) => allowedRoles.includes(r))) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Unauthorized / Potential Intrusion — Generate Multiple Synthetic Decoy Scatter Locations (Ghost Coordinates Swarm)
+    const decoySwarm = [
+      { id: 'decoy-1', latitude: 23.8103 + (Math.random() - 0.5) * 0.1, longitude: 90.4125 + (Math.random() - 0.5) * 0.1, accuracy: 100, speed: 45, captured_at: new Date().toISOString(), sequence_number: 1 },
+      { id: 'decoy-2', latitude: 22.3569 + (Math.random() - 0.5) * 0.1, longitude: 91.7832 + (Math.random() - 0.5) * 0.1, accuracy: 150, speed: 60, captured_at: new Date().toISOString(), sequence_number: 2 },
+      { id: 'decoy-3', latitude: 24.3745 + (Math.random() - 0.5) * 0.1, longitude: 88.6042 + (Math.random() - 0.5) * 0.1, accuracy: 200, speed: 30, captured_at: new Date().toISOString(), sequence_number: 3 },
+      { id: 'decoy-4', latitude: 22.8456 + (Math.random() - 0.5) * 0.1, longitude: 89.5403 + (Math.random() - 0.5) * 0.1, accuracy: 120, speed: 50, captured_at: new Date().toISOString(), sequence_number: 4 },
+      { id: 'decoy-5', latitude: 24.8949 + (Math.random() - 0.5) * 0.1, longitude: 91.8687 + (Math.random() - 0.5) * 0.1, accuracy: 180, speed: 40, captured_at: new Date().toISOString(), sequence_number: 5 },
+    ]
+
+    await createAuditLog({
+      actor_id: user.id,
+      category: 'SECURITY_EVENT',
+      action: 'DECOY_TELEMETRY_SERVED_TO_UNAUTHORIZED_PROBE',
+      evidence_id: evidenceId,
+      success: true,
+      metadata: { probe_user_id: user.id, decoy_points_served: decoySwarm.length },
+    })
+
+    return NextResponse.json({ data: decoySwarm, is_decoy: true })
   }
 
   const { data } = await supabase.from('transit_telemetry')
