@@ -67,13 +67,14 @@ export function AppSidebar({
     switch (currentRole) {
       case 'ADMIN':
         return [
-          { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Master Oversight', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Live Transit Radar', href: '/supervisor/transit', icon: Activity },
           { label: 'Users & Personnel', href: '/admin/users', icon: Users },
           { label: 'Role Permissions', href: '/admin/roles', icon: SlidersHorizontal },
           { label: 'Approved Devices', href: '/admin/devices', icon: Smartphone },
           { label: 'Case Registry', href: '/admin/cases', icon: FolderLock },
-          { label: 'System Health', href: '/admin/health', icon: Activity },
-          { label: 'Security Audit', href: '/admin/audit', icon: History },
+          { label: 'Security Audit & IP Logs', href: '/admin/audit', icon: History },
+          { label: 'Standards Compliance', href: '/admin/compliance', icon: ShieldCheck },
         ]
       case 'SUPERVISOR':
         return [
