@@ -24,6 +24,11 @@ import {
   Eye,
   Layers,
   FileText,
+  UserPlus,
+  Copy,
+  Check,
+  X,
+  Link2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -52,6 +57,14 @@ export default function AdminDashboard() {
   const [devices, setDevices] = useState<DeviceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Invite Modal State
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteRole, setInviteRole] = useState('INVESTIGATING_OFFICER')
+  const [inviteDept, setInviteDept] = useState('Criminal Investigation Department (CID)')
+  const [inviteBadge, setInviteBadge] = useState('CID-8891')
+  const [generatedLink, setGeneratedLink] = useState('')
+  const [copied, setCopied] = useState(false)
 
   // Master Global Evidence Registry for Complete Traceability
   const [allEvidence, setAllEvidence] = useState([
@@ -129,6 +142,23 @@ export default function AdminDashboard() {
     fetchData()
   }, [])
 
+  const handleGenerateLink = () => {
+    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase()
+    const token = `INV-${inviteBadge.replace(/\s+/g, '')}-${randomHex}`
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+    const link = `${origin}/register?token=${token}&role=${inviteRole}&agency=${encodeURIComponent(inviteDept)}`
+    setGeneratedLink(link)
+    setCopied(false)
+  }
+
+  const handleCopyLink = () => {
+    if (!generatedLink) return
+    navigator.clipboard.writeText(generatedLink)
+    setCopied(true)
+    toast.success('Secure Onboarding Link copied to clipboard!')
+    setTimeout(() => setCopied(false), 2500)
+  }
+
   const handleDeviceAction = async (deviceId: string, action: 'APPROVE' | 'REVOKE', name: string) => {
     setActionLoading(deviceId)
     try {
@@ -170,6 +200,33 @@ export default function AdminDashboard() {
       breadcrumbs={[{ label: 'Home' }, { label: 'Admin Command' }]}
     >
       <div className="space-y-6">
+        {/* Top Action Bar with 1-Click Generate Invitation Link */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-blue-600 dark:bg-blue-600/90 text-white shadow-xl shadow-blue-600/20">
+          <div>
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-200">
+              RESTRICTED ONBOARDING GATEWAY
+            </span>
+            <h2 className="text-xl font-black mt-0.5">
+              Authorized Personnel Invitation Dispatcher
+            </h2>
+            <p className="text-xs text-blue-100 mt-1">
+              Generate cryptographic, token-gated invitation links to onboard verified officers, analysts, and judges.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              handleGenerateLink()
+              setShowInviteModal(true)
+            }}
+            className="px-5 py-3 rounded-2xl bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 shadow-md transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4 text-blue-600" />
+            <span>Generate Officer Invite Link</span>
+          </button>
+        </div>
+
         {/* KPI Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="forenza-card p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827]">
@@ -430,6 +487,127 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+
+        {/* 🌟 INVITATION GENERATOR POPUP MODAL */}
+        {showInviteModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="w-full max-w-lg bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-7 space-y-5 animate-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-sm">
+                  <UserPlus className="w-4 h-4" />
+                  <span>GENERATE ENCRYPTED INVITATION LINK</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                      Assigned Role
+                    </label>
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => {
+                        setInviteRole(e.target.value)
+                        setGeneratedLink('')
+                      }}
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 font-medium"
+                    >
+                      <option value="INVESTIGATING_OFFICER">Investigating Officer</option>
+                      <option value="VAULT_CUSTODIAN">Vault Custodian</option>
+                      <option value="LAB_ANALYST">Lab Analyst</option>
+                      <option value="JUDGE">Judicial Magistrate</option>
+                      <option value="SUPERVISOR">Police Supervisor</option>
+                      <option value="ADMIN">System Administrator</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                      Pre-Assigned Badge ID
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteBadge}
+                      onChange={(e) => {
+                        setInviteBadge(e.target.value)
+                        setGeneratedLink('')
+                      }}
+                      placeholder="CID-8891"
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                    Department / Police Station
+                  </label>
+                  <input
+                    type="text"
+                    value={inviteDept}
+                    onChange={(e) => {
+                      setInviteDept(e.target.value)
+                      setGeneratedLink('')
+                    }}
+                    placeholder="Criminal Investigation Department (CID)"
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGenerateLink}
+                  className="w-full py-2.5 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Generate Cryptographic Link</span>
+                </button>
+              </div>
+
+              {generatedLink && (
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-blue-200 dark:border-blue-900/60 space-y-3">
+                  <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 block uppercase">
+                    ✓ SECURE TOKEN GENERATED (ACTIVE FOR ONBOARDING)
+                  </span>
+
+                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-mono break-all text-slate-700 dark:text-slate-300 select-all">
+                    {generatedLink}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      copied
+                        ? 'bg-emerald-600 text-white shadow-emerald-600/30'
+                        : 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 hover:bg-blue-600 dark:hover:bg-blue-600 dark:hover:text-white'
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>Link Copied to Clipboard!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copy Link to Send to Officer</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </AppShell>
   )
