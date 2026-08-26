@@ -87,9 +87,12 @@ export async function POST(request: NextRequest) {
 
     // 5. Create Audit Log
     await createAuditLog({
-      user_id: userId,
+      actor_id: userId,
+      actor_email: email,
+      category: 'AUTHENTICATION',
       action: 'USER_REGISTERED',
-      details: { email, role, badgeNumber, department, device_name },
+      success: true,
+      metadata: { role, badgeNumber, department, device_name },
       ip_address,
       user_agent,
     })
