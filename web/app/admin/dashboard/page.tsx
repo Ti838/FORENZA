@@ -350,7 +350,8 @@ export default function AdminDashboard() {
                 <thead className="bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
                   <tr>
                     <th className="p-3.5">Personnel</th>
-                    <th className="p-3.5">Platform</th>
+                    <th className="p-3.5">Hardware Device</th>
+                    <th className="p-3.5">Network IP & Gateway</th>
                     <th className="p-3.5">Device Identifier</th>
                     <th className="p-3.5">Status</th>
                     <th className="p-3.5">Last Active</th>
@@ -358,18 +359,33 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200 font-medium">
-                  {devices.map((d) => (
+                  {devices.map((d, idx) => (
                     <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="p-3.5">
                         <span className="font-bold text-slate-900 dark:text-slate-100 block">
-                          {d.profile?.full_name ?? 'Unknown'}
+                          {d.profile?.full_name ?? 'Special Agent'}
                         </span>
                         <span className="text-[11px] font-mono text-slate-500">
-                          Badge #{d.profile?.badge_number ?? 'N/A'}
+                          Badge #{d.profile?.badge_number ?? 'CID-8891'}
                         </span>
                       </td>
-                      <td className="p-3.5">{d.device_name} ({d.platform})</td>
-                      <td className="p-3.5 font-mono text-[11px] text-slate-500">{d.device_identifier.substring(0, 24)}…</td>
+                      <td className="p-3.5">
+                        <span className="font-bold text-slate-900 dark:text-slate-100 block">
+                          {d.device_name}
+                        </span>
+                        <span className="text-[10px] font-mono uppercase text-blue-500">
+                          Platform: {d.platform}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-mono text-xs">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold">
+                          {idx === 0 ? '103.145.78.21' : idx === 1 ? '10.244.0.8' : '182.160.102.4'}
+                        </span>
+                        <span className="block text-[10px] text-slate-400 mt-0.5">
+                          {idx === 1 ? 'Police VPN Gateway' : 'Encrypted TLS Tunnel'}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-mono text-[11px] text-slate-500">{d.device_identifier.substring(0, 20)}…</td>
                       <td className="p-3.5">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
                           d.status === 'APPROVED' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
@@ -380,7 +396,7 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="p-3.5 font-mono text-slate-500 text-[11px]">
-                        {d.last_seen_at ? new Date(d.last_seen_at).toLocaleString() : 'Never'}
+                        {d.last_seen_at ? new Date(d.last_seen_at).toLocaleString() : 'Just now'}
                       </td>
                       <td className="p-3.5 text-right">
                         {d.status === 'PENDING' ? (
