@@ -25,6 +25,8 @@ import {
 import Link from 'next/link'
 import { toast } from 'sonner'
 
+import { getDetailedDeviceName } from '@/lib/device-detector'
+
 export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -86,6 +88,7 @@ export default function RegisterPage() {
 
     try {
       const deviceId = `web_${crypto.randomUUID().replace(/-/g, '')}`
+      const realDeviceName = getDetailedDeviceName()
 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -98,7 +101,7 @@ export default function RegisterPage() {
           role,
           password,
           device_identifier: deviceId,
-          device_name: `Web Workstation — ${navigator.userAgent.slice(0, 40)}`,
+          device_name: realDeviceName,
           photo: photoPreview,
           biometric_verified: biometricBound,
         }),

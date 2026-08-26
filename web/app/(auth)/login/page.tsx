@@ -21,6 +21,8 @@ import Link from 'next/link'
 import { getDashboardPath } from '@/lib/rbac'
 import { AppRole } from '@/types'
 
+import { getDetailedDeviceName } from '@/lib/device-detector'
+
 function getDeviceIdentifier(): string {
   if (typeof window === 'undefined') return 'server'
   const stored = localStorage.getItem('forenza_device_id')
@@ -56,6 +58,7 @@ export default function LoginPage() {
 
     try {
       const deviceId = getDeviceIdentifier()
+      const realDeviceName = getDetailedDeviceName()
 
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -64,7 +67,7 @@ export default function LoginPage() {
           email: email.trim().toLowerCase(),
           password,
           device_identifier: deviceId,
-          device_name: `Web Browser — ${navigator.userAgent.slice(0, 40)}`,
+          device_name: realDeviceName,
           platform: 'web',
         }),
       })
