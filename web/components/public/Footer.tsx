@@ -1,5 +1,5 @@
 import { ForenzaLogo } from '@/components/brand/ForenzaLogo'
-import { ShieldCheck, Scale, Lock, Globe } from 'lucide-react'
+import { ShieldCheck, ArrowRight, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
 export function PublicFooter() {
@@ -18,77 +18,78 @@ export function PublicFooter() {
           </div>
         </div>
 
-        {/* Navigation Column */}
+        {/* Platform & Engine Column */}
         <div className="space-y-2.5">
           <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-wider uppercase font-mono">
             Platform & Engine
           </h4>
           <ul className="space-y-2 text-xs">
             <li>
-              <Link href="/platform" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/platform" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Supported Platforms (Web, Desktop, Android)
               </Link>
             </li>
             <li>
-              <Link href="/#how-it-works" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/how-it-works" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 9-Step Evidence Lifecycle
               </Link>
             </li>
             <li>
-              <Link href="/technology" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/technology" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Technology Architecture
               </Link>
             </li>
             <li>
-              <Link href="/download" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/download" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Download Client Packages
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* Governance & Security */}
+        {/* Security & Governance Column */}
         <div className="space-y-2.5">
           <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-wider uppercase font-mono">
             Security & Governance
           </h4>
           <ul className="space-y-2 text-xs">
             <li>
-              <Link href="/security" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/security" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Cryptographic Integrity & Threat Model
               </Link>
             </li>
             <li>
-              <Link href="/#offline" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/how-it-works" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Offline-First Emergency Protocol
               </Link>
             </li>
             <li>
-              <Link href="/about" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/about" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Institutional Mission & Ethics
               </Link>
             </li>
             <li>
-              <Link href="/faq" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/faq" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors block py-0.5">
                 Frequently Asked Questions
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* Institutional Contact */}
+        {/* Institutional Contact Column */}
         <div className="space-y-2.5">
           <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-wider uppercase font-mono">
             Institutional Access
           </h4>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 leading-relaxed">
             For court certifications, law-enforcement integration, or deployment audits:
           </p>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline pt-1"
           >
-            <span>Contact Forensic Solutions Team &rarr;</span>
+            <span>Contact Forensic Solutions Team</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
