@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { ForenzaLogo } from '@/components/brand/ForenzaLogo'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
-import { Menu, X, Shield, ArrowRight, Lock, Key } from 'lucide-react'
+import { Menu, X, ArrowRight, Key } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -13,7 +13,7 @@ export function PublicNavbar() {
 
   const navLinks = [
     { label: 'Home', href: '/' },
-    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'How It Works', href: '/how-it-works' },
     { label: 'Platform', href: '/platform' },
     { label: 'Security', href: '/security' },
     { label: 'Technology', href: '/technology' },
@@ -28,7 +28,7 @@ export function PublicNavbar() {
         {/* Logo */}
         <div className="flex items-center gap-6">
           <ForenzaLogo size="md" showTagline={false} linkToDashboard={false} />
-          
+
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
@@ -37,10 +37,10 @@ export function PublicNavbar() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     isActive
-                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 font-bold shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                   }`}
                 >
                   {link.label}
@@ -67,7 +67,7 @@ export function PublicNavbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -79,16 +79,23 @@ export function PublicNavbar() {
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-16 left-0 right-0 bg-white dark:bg-[#0F1523] border-b border-slate-200 dark:border-slate-800 p-5 space-y-3 shadow-xl">
           <nav className="flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    isActive
+                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 font-bold'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
           </nav>
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
             <Link
