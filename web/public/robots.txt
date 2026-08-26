@@ -1,0 +1,13 @@
+# FORENZA Stealth & Privacy Policy — Disallow all crawlers on private forensic routes
+User-agent: *
+Disallow: /admin/
+Disallow: /officer/
+Disallow: /vault/
+Disallow: /lab/
+Disallow: /judge/
+Disallow: /supervisor/
+Disallow: /auditor/
+Disallow: /api/
+Disallow: /register
+Disallow: /mfa
+Disallow: /login
