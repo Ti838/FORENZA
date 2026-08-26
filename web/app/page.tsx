@@ -12,20 +12,18 @@ import {
   Scale,
   FlaskConical,
   Building2,
-  Users,
   History,
   CheckCircle2,
-  Terminal,
   Activity,
   Cpu,
   Radio,
   Key,
-  Layers,
-  FileCheck,
-  AlertTriangle,
+  Download,
   Zap,
-  Globe,
-  HardDrive,
+  Smartphone,
+  Monitor,
+  Terminal,
+  Apple,
   QrCode,
   MapPin,
   FileText,
@@ -85,8 +83,8 @@ export default function MasterPublicHomePage() {
             </p>
           </div>
 
-          {/* Primary & Secondary CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          {/* Primary & Secondary CTAs with Prominent Download Client Button */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
               href="/login"
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm font-mono tracking-wider shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all border border-blue-400/30"
@@ -97,8 +95,16 @@ export default function MasterPublicHomePage() {
             </Link>
 
             <Link
-              href="#how-it-works"
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm border border-slate-200 dark:border-slate-700 shadow-sm transition-all"
+              href="/download"
+              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm font-mono tracking-wider shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              <span>DOWNLOAD MOBILE & DESKTOP APP</span>
+            </Link>
+
+            <Link
+              href="/how-it-works"
+              className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm border border-slate-200 dark:border-slate-700 shadow-sm transition-all"
             >
               Explore How It Works
             </Link>
@@ -126,7 +132,7 @@ export default function MasterPublicHomePage() {
                   { title: 'Transit Telemetry', sub: 'Decoy Defense', icon: Radio },
                   { title: 'Forensic Lab', sub: 'Sample Depletion', icon: FlaskConical },
                   { title: 'Judicial Chamber', sub: 'Court Dossier', icon: Scale },
-                ].map((node, i) => {
+                ].map((node) => {
                   const Icon = node.icon
                   return (
                     <div
@@ -180,42 +186,94 @@ export default function MasterPublicHomePage() {
         </div>
       </section>
 
-      {/* 4. HOW IT WORKS (9-STEP LIFECYCLE) */}
-      <section id="how-it-works" className="py-20 bg-slate-100/60 dark:bg-[#090D16] border-y border-slate-200 dark:border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
+      {/* 4. DEDICATED APP DOWNLOAD SECTION ON HOME PAGE */}
+      <section className="py-16 bg-slate-100/60 dark:bg-[#090D16] border-y border-slate-200 dark:border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <h2 className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-              LIFECYCLE METHODOLOGY
-            </h2>
-            <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              How FORENZA Operates Across 9 Stages
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              <Download className="w-3.5 h-3.5" />
+              <span>NATIVE MULTI-PLATFORM APPLICATIONS</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              Download FORENZA for Your Device
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Every operation from scene capture to courtroom trial forms an append-only verifiable cryptographic ledger.
+              Available as a dedicated Field Application for Android and high-performance Workstation for Windows, Linux, and macOS.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {lifecycleSteps.map((step) => {
-              const Icon = step.icon
-              return (
-                <div
-                  key={step.num}
-                  className="p-6 rounded-3xl bg-white dark:bg-[#0F1523] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black font-mono text-blue-600/30 dark:text-blue-400/20">
-                      {step.num}
-                    </span>
-                    <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{step.title}</h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{step.desc}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {/* Android Card */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0F1523] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="p-2.5 w-fit rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                  <Smartphone className="w-5 h-5" />
                 </div>
-              )
-            })}
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">Android Field App</h4>
+                <p className="text-[11px] text-slate-500">Camera, GPS Geofence & Offline AES Vault</p>
+              </div>
+              <Link
+                href="/download"
+                className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Get Android APK</span>
+              </Link>
+            </div>
+
+            {/* Windows Card */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0F1523] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="p-2.5 w-fit rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                  <Monitor className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">Windows Desktop</h4>
+                <p className="text-[11px] text-slate-500">VS Code Style Setup & Device Token</p>
+              </div>
+              <Link
+                href="/download"
+                className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Get Windows Setup</span>
+              </Link>
+            </div>
+
+            {/* Linux Card */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0F1523] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="p-2.5 w-fit rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400">
+                  <Terminal className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">Linux Workstation</h4>
+                <p className="text-[11px] text-slate-500">Kali Linux, Ubuntu & Debian AppImage</p>
+              </div>
+              <Link
+                href="/download"
+                className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Get .AppImage</span>
+              </Link>
+            </div>
+
+            {/* macOS Card */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0F1523] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="p-2.5 w-fit rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                  <Apple className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">macOS Judicial Hub</h4>
+                <p className="text-[11px] text-slate-500">Apple Silicon & Intel Universal DMG</p>
+              </div>
+              <Link
+                href="/download"
+                className="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Get macOS DMG</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

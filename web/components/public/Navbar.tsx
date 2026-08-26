@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { ForenzaLogo } from '@/components/brand/ForenzaLogo'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
-import { Menu, X, ArrowRight, Key } from 'lucide-react'
+import { Menu, X, ArrowRight, Key, Download } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -20,6 +20,7 @@ export function PublicNavbar() {
     { label: 'About', href: '/about' },
     { label: 'FAQ', href: '/faq' },
     { label: 'Contact', href: '/contact' },
+    { label: 'Download', href: '/download' },
   ]
 
   return (
@@ -53,6 +54,14 @@ export function PublicNavbar() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
+
+          <Link
+            href="/download"
+            className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-500" />
+            <span>Download Apps</span>
+          </Link>
 
           <Link
             href="/login"
@@ -97,7 +106,15 @@ export function PublicNavbar() {
               )
             })}
           </nav>
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2">
+            <Link
+              href="/download"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full py-2.5 rounded-xl text-xs font-bold font-mono tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+            >
+              <Download className="w-4 h-4 text-blue-500" />
+              <span>DOWNLOAD CLIENT PACKAGES</span>
+            </Link>
             <Link
               href="/login"
               onClick={() => setMobileMenuOpen(false)}
