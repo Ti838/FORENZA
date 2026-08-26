@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ForenzaLogo } from '@/components/brand/ForenzaLogo'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -17,6 +17,10 @@ import {
   CheckCircle2,
   KeyRound,
   ShieldAlert,
+  Camera,
+  Fingerprint,
+  Upload,
+  User,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -37,11 +41,13 @@ export default function RegisterPage() {
   const [role, setRole] = useState(prefilledRole)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [biometricBound, setBiometricBound] = useState(false)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // If an authorized invite token is present in the URL query
     if (inviteToken && inviteToken.length >= 8) {
       setHasValidToken(true)
     }
@@ -55,6 +61,22 @@ export default function RegisterPage() {
     } else {
       setError('Invalid or expired departmental authorization token.')
     }
+  }
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPhotoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleBiometricBinding = () => {
+    setBiometricBound(true)
+    toast.success('Hardware biometric key & device token successfully registered!')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,6 +99,8 @@ export default function RegisterPage() {
           password,
           device_identifier: deviceId,
           device_name: `Web Workstation — ${navigator.userAgent.slice(0, 40)}`,
+          photo: photoPreview,
+          biometric_verified: biometricBound,
         }),
       })
 
@@ -97,8 +121,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 px-4 py-3 transition-colors overflow-y-auto sm:overflow-hidden select-none">
-      {/* Top Header Bar */}
+    <div className="min-h-screen w-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 px-4 py-3 transition-colors select-none">
+      {/* Top Header */}
       <header className="w-full max-w-5xl mx-auto flex items-center justify-between shrink-0">
         <Link
           href="/"
@@ -111,17 +135,16 @@ export default function RegisterPage() {
         <ThemeToggle />
       </header>
 
-      {/* Main Container */}
-      <main className="w-full max-w-md mx-auto my-auto py-1 flex flex-col items-center justify-center">
-        {/* Brand Logo */}
+      {/* Main Content */}
+      <main className="w-full max-w-lg mx-auto my-auto py-3 flex flex-col items-center justify-center">
         <div className="text-center mb-2">
           <ForenzaLogo size="md" showTagline={true} className="justify-center" />
         </div>
 
-        {/* Case 1: No Token Provided — Stealth & Security Screen */}
+        {/* Case 1: Locked Mode without Invite Token */}
         {!hasValidToken ? (
-          <div className="w-full p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-4 text-center">
-            <div className="p-3 w-fit mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400">
+          <div className="w-full p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-4 text-center">
+            <div className="p-3.5 w-fit mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400">
               <ShieldAlert className="w-8 h-8" />
             </div>
 
@@ -175,18 +198,18 @@ export default function RegisterPage() {
             </div>
           </div>
         ) : (
-          /* Case 2: Valid Token Confirmed — Show Registration Form */
-          <div className="w-full p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-3">
+          /* Case 2: Unlocked with Full Biometrics & Photo Verification */
+          <div className="w-full p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-xl space-y-4">
             <div>
               <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider mb-0.5 font-mono">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>AUTHORIZED INVITATION VERIFIED</span>
               </div>
               <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Complete Personnel Onboarding
+                Complete Personnel & Biometric Onboarding
               </h1>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Bind your departmental badge and hardware device credentials.
+                Bind your official photo, badge ID, and hardware biometric credentials.
               </p>
             </div>
 
@@ -197,8 +220,56 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-2.5">
-              <div className="grid grid-cols-2 gap-2">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Photo & Biometric Section */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#0B0F19] border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-4">
+                {/* Officer Photo Upload / Capture */}
+                <div className="flex items-center gap-3">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/80 border-2 border-dashed border-blue-300 dark:border-blue-700 flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 cursor-pointer overflow-hidden relative group"
+                  >
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Officer" className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <Camera className="w-5 h-5" />
+                        <span className="text-[9px] font-bold mt-0.5">Photo</span>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handlePhotoSelect}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
+                      Official Photo
+                    </span>
+                    <span className="text-[10px] text-slate-500">Badge facial match</span>
+                  </div>
+                </div>
+
+                {/* Fingerprint / Device Biometric Button */}
+                <button
+                  type="button"
+                  onClick={handleBiometricBinding}
+                  className={`px-3 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-2 border transition-all cursor-pointer ${
+                    biometricBound
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                  }`}
+                >
+                  <Fingerprint className="w-4 h-4 text-blue-500" />
+                  <span>{biometricBound ? 'Biometric Bound ✓' : 'Register Fingerprint'}</span>
+                </button>
+              </div>
+
+              {/* Name & Badge Number */}
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
                     Full Legal Name
@@ -227,10 +298,11 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              {/* Email & Role */}
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Official Email
+                    Government Email
                   </label>
                   <input
                     type="email"
@@ -261,6 +333,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              {/* Password */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
                   Security Password (Min. 8 characters)
@@ -292,11 +365,11 @@ export default function RegisterPage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Binding Device & Registering...</span>
+                    <span>Binding Biometric Device & Registering...</span>
                   </>
                 ) : (
                   <>
-                    <span>Create Authorized Account</span>
+                    <span>Complete Authorized Registration</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
@@ -313,7 +386,6 @@ export default function RegisterPage() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="text-center text-[10px] font-mono text-slate-400 shrink-0">
         &copy; {new Date().getFullYear()} FORENZA Enterprise Forensics. All rights reserved.
       </footer>

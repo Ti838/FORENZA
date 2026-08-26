@@ -236,27 +236,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Compact Bottom notice & Register / Download links */}
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-center">
-            <div className="text-[11px] text-slate-500">
-              New personnel or officer?{' '}
-              <Link href="/register" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
-                Create Authorized Account
-              </Link>
+          {/* Compact Bottom notice & Download link */}
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+            <div className="flex items-center gap-1">
+              <Smartphone className="w-3 h-3 text-blue-500" />
+              <span>MFA & DEVICE BINDING</span>
             </div>
-            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1">
-              <div className="flex items-center gap-1">
-                <Smartphone className="w-3 h-3 text-blue-500" />
-                <span>MFA & DEVICE BINDING</span>
-              </div>
-              <Link
-                href="/download"
-                className="text-[11px] text-blue-600 dark:text-blue-400 font-sans font-bold hover:underline flex items-center gap-1"
-              >
-                <Download className="w-3 h-3" />
-                <span>Download Client</span>
-              </Link>
-            </div>
+            <Link
+              href="/download"
+              className="text-[11px] text-blue-600 dark:text-blue-400 font-sans font-bold hover:underline flex items-center gap-1"
+            >
+              <Download className="w-3 h-3" />
+              <span>Download Client</span>
+            </Link>
           </div>
         </div>
       </main>
