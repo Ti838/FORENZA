@@ -1,37 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const WINDOWS_INSTALLER_BAT = `@echo off
-title FORENZA — Enterprise Forensic Evidence Platform
-color 0B
-cls
+// Silent Windows VBScript Launcher (Runs 100% silently without opening black CMD terminal)
+const WINDOWS_SILENT_LAUNCHER_VBS = `' FORENZA Enterprise Forensic Desktop Client Launcher
+' Launches dedicated standalone app window without command prompt (CMD) window.
 
-echo ============================================================
-echo   FORENZA - Trusted Evidence. True Justice.
-echo   Enterprise Forensic Evidence Chain of Custody Platform
-echo   Certified under Federal Rules of Evidence Rule 902(14)
-echo ============================================================
-echo.
-echo [1/4] Detecting Hardware Security Environment...
-echo       - Windows OS: %OS% (%PROCESSOR_ARCHITECTURE%)
-echo       - Hardware Device Token: WIN-%RANDOM%-%RANDOM%
-echo.
-echo [2/4] Initializing Local Forensic Runtime...
-timeout /t 1 /nobreak >nul
-echo       - Cryptographic SHA-256 Engine: READY
-echo       - Haversine Geofence Radar: ACTIVE
-echo       - Append-Only Audit Subsystem: ARMED
-echo.
-echo [3/4] Launching Dedicated FORENZA Desktop Client...
-timeout /t 1 /nobreak >nul
-start "" "http://localhost:3000"
-echo.
-echo [4/4] FORENZA Workstation Active on Port 3000!
-echo.
-echo ============================================================
-echo   FORENZA Forensic Desktop Session Initialized.
-echo   Press any key to close this installer window.
-echo ============================================================
-pause >nul
+Set WshShell = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+' Create Desktop Shortcut with FORENZA Icon
+strDesktop = WshShell.SpecialFolders("Desktop")
+Set oLink = WshShell.CreateShortcut(strDesktop & "\\FORENZA Forensic Desktop.lnk")
+oLink.TargetPath = "http://localhost:3000"
+oLink.Description = "FORENZA Forensic Evidence Chain of Custody Platform"
+oLink.Save
+
+' Launch app directly in user's default browser or standalone window
+WshShell.Run "http://localhost:3000", 1, False
 `
 
 export async function GET(
@@ -41,10 +25,10 @@ export async function GET(
   const { platform } = await params
 
   if (platform === 'windows') {
-    return new NextResponse(WINDOWS_INSTALLER_BAT, {
+    return new NextResponse(WINDOWS_SILENT_LAUNCHER_VBS, {
       headers: {
-        'Content-Type': 'application/x-bat; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="Forenza-Forensic-Setup.bat"',
+        'Content-Type': 'application/x-vbs; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="Forenza-Desktop-Setup.vbs"',
       },
     })
   }
@@ -70,7 +54,7 @@ export async function GET(
   }
 
   if (platform === 'linux') {
-    const appImageContent = '#!/bin/bash\n# FORENZA Linux Forensic Workstation Launcher (AppImage / x86_64)\necho "Launching FORENZA Forensic Desktop Client..."\nxdg-open "http://localhost:3000" || firefox "http://localhost:3000" || google-chrome "http://localhost:3000"\n'
+    const appImageContent = '#!/bin/bash\n# FORENZA Linux Forensic Workstation Launcher (AppImage / x86_64)\nxdg-open "http://localhost:3000" || firefox "http://localhost:3000" || google-chrome "http://localhost:3000" >/dev/null 2>&1 &\n'
     return new NextResponse(appImageContent, {
       headers: {
         'Content-Type': 'application/x-executable',

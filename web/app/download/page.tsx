@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   ArrowRight,
   HelpCircle,
+  Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -27,6 +28,7 @@ export default function DownloadPage() {
   const [detectedOS, setDetectedOS] = useState<DetectedOS>('Windows')
   const [arch, setArch] = useState<string>('x64 (64-bit)')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [isInstallable, setIsInstallable] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -56,6 +58,7 @@ export default function DownloadPage() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
+      setIsInstallable(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -64,23 +67,26 @@ export default function DownloadPage() {
     }
   }, [])
 
-  const handlePwaInstall = async () => {
+  const handle1ClickInstall = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
       if (outcome === 'accepted') {
-        toast.success('FORENZA Client installed successfully!')
+        toast.success('FORENZA Client successfully installed to your Desktop!')
       }
       setDeferredPrompt(null)
+      setIsInstallable(false)
     } else {
+      // Direct Windows Desktop Shortcut / Standalone prompt
       toast.info(
-        'To install as a desktop application: use the Install icon in your browser address bar (top right) or download the native package below.'
+        'Installing FORENZA Native Desktop Client... Use the Install icon on top right of your browser or download the package below!'
       )
+      window.location.href = `/api/download/windows`
     }
   }
 
   const handleDownload = (platform: string, label: string) => {
-    toast.info(`Downloading official FORENZA client for ${label}...`)
+    toast.info(`Downloading official FORENZA installer for ${label}...`)
     window.location.href = `/api/download/${platform}`
   }
 
@@ -129,9 +135,9 @@ export default function DownloadPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-12">
-        {/* Unified Architecture Header Banner */}
+        {/* Unified Architecture Header Banner with Direct 1-Click Install */}
         <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-800 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden">
-          <div className="relative z-10 max-w-3xl space-y-3">
+          <div className="relative z-10 max-w-3xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-mono font-bold">
               <Radio className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
               <span>DETECTED ENVIRONMENT: {detectedOS.toUpperCase()} ({arch})</span>
@@ -142,61 +148,27 @@ export default function DownloadPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-              Access FORENZA from the client that fits your operational workflow. All platforms connect to the same central database, authentication, SHA-256 evidence ledger, and Row Level Security policies.
+              Install FORENZA directly onto your {detectedOS} device with 1-click. No terminal command prompt required.
             </p>
 
             <div className="flex items-center flex-wrap gap-3 pt-2">
-              <Link
-                href="/login"
+              {/* Primary 1-Click Direct Install Button */}
+              <button
+                type="button"
+                onClick={handle1ClickInstall}
                 className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-blue-600 font-extrabold text-sm shadow-lg shadow-black/10 hover:bg-blue-50 active:scale-95 transition-all cursor-pointer"
               >
-                <Globe className="w-5 h-5 text-blue-600" />
-                <span>Open Web Platform (Direct Access)</span>
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                <span>1-CLICK DIRECT INSTALL FOR {detectedOS.toUpperCase()}</span>
+              </button>
+
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-extrabold text-sm backdrop-blur-md transition-all"
+              >
+                <Globe className="w-5 h-5" />
+                <span>Open in Web Browser</span>
               </Link>
-
-              {detectedOS === 'Windows' && (
-                <button
-                  type="button"
-                  onClick={() => handleDownload('windows', 'Windows')}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
-                >
-                  <Download className="w-5 h-5" />
-                  <span>Download for Windows (.bat)</span>
-                </button>
-              )}
-
-              {detectedOS === 'Linux' && (
-                <button
-                  type="button"
-                  onClick={() => handleDownload('linux', 'Linux')}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
-                >
-                  <Terminal className="w-5 h-5" />
-                  <span>Download for Linux (.AppImage)</span>
-                </button>
-              )}
-
-              {detectedOS === 'macOS' && (
-                <button
-                  type="button"
-                  onClick={() => handleDownload('macos', 'macOS')}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
-                >
-                  <Apple className="w-5 h-5" />
-                  <span>Download for macOS (.dmg)</span>
-                </button>
-              )}
-
-              {detectedOS === 'Android' && (
-                <button
-                  type="button"
-                  onClick={() => handleDownload('android', 'Android')}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-sm backdrop-blur-md transition-all cursor-pointer"
-                >
-                  <Smartphone className="w-5 h-5" />
-                  <span>Download Android APK</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -287,7 +259,7 @@ export default function DownloadPage() {
                   className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>DOWNLOAD ANDROID APP</span>
+                  <span>DOWNLOAD ANDROID APK</span>
                 </button>
               </div>
             </div>
@@ -315,7 +287,7 @@ export default function DownloadPage() {
                   <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Laboratory Workflow & Aliquots</span></div>
                   <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Audit, Integrity & Security Center</span></div>
                   <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Judicial Review & Court Dossier</span></div>
-                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Hardware Device Token Binding</span></div>
+                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span>Zero-CMD Silent Desktop Installation</span></div>
                 </div>
               </div>
               <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
@@ -325,7 +297,7 @@ export default function DownloadPage() {
                   className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>DOWNLOAD FOR WINDOWS</span>
+                  <span>INSTALL FOR WINDOWS (NO CMD)</span>
                 </button>
               </div>
             </div>
