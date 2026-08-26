@@ -13,8 +13,11 @@ const PUBLIC_ROUTES = [
   '/contact',
   '/download',
   '/login',
+  '/register',
+  '/signup',
   '/mfa',
   '/api/auth/login',
+  '/api/auth/register',
   '/api/health',
   '/api/download',
 ]
