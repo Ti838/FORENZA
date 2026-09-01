@@ -30,8 +30,11 @@ export const metadata: Metadata = {
     title: 'FORENZA',
   },
   icons: {
-    icon: '/icon',
-    apple: '/logo.png',
+    icon: [
+      { url: '/brand/logo.png', sizes: 'any' },
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/brand/logo.png',
   },
   robots: 'noindex, nofollow',
 }
@@ -55,7 +58,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <head>
-        <link rel="icon" href="/icon" />
+        <link rel="icon" type="image/png" href="/brand/logo.png" />
+        <link rel="shortcut icon" href="/brand/logo.png" />
+        <link rel="apple-touch-icon" href="/brand/logo.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0B0F19" />
         <script

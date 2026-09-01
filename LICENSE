@@ -1,0 +1,73 @@
+FORENZA SOURCE-AVAILABLE PUBLIC INSPECTION & PROPRIETARY ARCHITECTURE LICENSE
+Copyright (c) 2024-2026 Timon Biswas. All Rights Reserved.
+Creator, Inventor & Sole Rights Holder: Timon Biswas (timonbiswas33@gmail.com)
+
+================================================================================
+PUBLIC INSPECTION PERMITTED — ZERO COMMERCIAL OR ARCHITECTURAL REPLICATION
+================================================================================
+
+IMPORTANT — PLEASE READ CAREFULLY:
+This repository is "SOURCE-AVAILABLE" for public viewing, educational study,
+security auditing, and research inspection. However, the system architecture,
+cryptographic state machines, reconciliation algorithms, workflows, and core
+inventions are the EXCLUSIVE PROPRIETARY PROPERTY of Timon Biswas.
+
+YOU MAY:
+✔ Read, view, inspect, and audit the source code for educational and research purposes.
+✔ Verify the cryptographic integrity formulas, algorithms, and documentation.
+✔ Star, bookmark, and reference the research work with proper attribution to Timon Biswas.
+
+YOU MAY NOT (STRICTLY PROHIBITED):
+✖ Steal, copy, replicate, or clone the architecture, workflows, or system design.
+✖ Build a competing product, SaaS, or clone in ANY language (Go, Rust, Python, etc.).
+✖ Fork, redistribute, or host modified copies without written permission.
+✖ Use this codebase, architecture, or schemas for ANY commercial or institutional purpose.
+✖ Ingest this codebase to train AI/ML models or code generators.
+
+================================================================================
+1. PERMITTED USE (PUBLIC INSPECTION & RESEARCH ONLY)
+================================================================================
+1.1 Anyone is welcome to view, read, audit, and evaluate this codebase solely for:
+    (a) Independent cryptographic and academic research verification.
+    (b) Non-commercial educational study of forensic state-machine concepts.
+    (c) Security audits and peer reviews.
+
+================================================================================
+2. STRICT PROHIBITION ON ARCHITECTURAL THEFT & CLONING
+================================================================================
+2.1 You SHALL NOT copy, replicate, re-engineer, or adapt the architecture, state
+    machine topology (FZ-TWIN), reconciliation logic (FZ-EPRA / FZ-DIV), offline
+    vault schemas (FZ-VAULT), or multimodal AI pipelines into any software product,
+    whether open-source, closed-source, or commercial.
+2.2 Rebuilding this platform's architecture in another programming language (e.g.
+    Go, Rust, Python, C++, Java, Kotlin, Swift, or C#) without written consent is
+    strictly prohibited and constitutes willful intellectual property theft.
+
+================================================================================
+3. STRICT PROHIBITION ON COMMERCIAL DEPLOYMENT
+================================================================================
+3.1 No individual, enterprise, police department, lab, or government agency may
+    deploy, host, resell, white-label, or use this software in production or for
+    commercial benefit without a signed license agreement from Timon Biswas.
+
+================================================================================
+4. MANDATORY CONTACT FOR COMMERCIAL OR INSTITUTIONAL USE
+================================================================================
+4.1 If you wish to pilot, deploy, integrate, or commercially license FORENZA, you
+    MUST contact the creator directly:
+
+                      Timon Biswas
+                      Email: timonbiswas33@gmail.com
+
+================================================================================
+5. LEGAL REMEDIES & STATUTORY ENFORCEMENT
+================================================================================
+5.1 This license is governed by international intellectual property treaties
+    (WIPO, Berne Convention, TRIPS, DMCA, DTSA).
+5.2 Any unauthorized commercial use or architectural cloning will be subject to
+    immediate legal action, court injunctions, and maximum statutory damages.
+
+================================================================================
+CREATOR & CONTACT:
+Timon Biswas | Email: timonbiswas33@gmail.com
+================================================================================

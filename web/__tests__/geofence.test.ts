@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { haversineDistance, verifyGeofence } from '../lib/geofence'
+import { haversineDistance, verifyGeofence, detectGpsFluctuationAndSpoofing, generateCloakedHoneyLocations } from '../lib/geofence'
 
 describe('Haversine Distance Calculation', () => {
   it('returns 0 for identical coordinates', () => {
@@ -61,3 +61,66 @@ describe('Geofence Verification', () => {
     expect(result.result).toBe('PERIMETER_VERIFIED')
   })
 })
+
+describe('GPS Spoofing & Multi-Location Fluctuation Detection', () => {
+  it('detects impossible velocity teleportation (>162 km/h)', () => {
+    const now = Date.now()
+    const trail = [
+      { latitude: 48.8566, longitude: 2.3522, timestamp_ms: now },
+      { latitude: 51.5074, longitude: -0.1278, timestamp_ms: now + 5000 }, // 340km in 5 seconds
+    ]
+    const analysis = detectGpsFluctuationAndSpoofing(trail)
+    expect(analysis.is_spoofed).toBe(true)
+    expect(analysis.anomaly_type).toBe('IMPOSSIBLE_VELOCITY')
+    expect(analysis.confidence_score).toBeGreaterThan(0.9)
+  })
+
+  it('detects erratic multi-location fluctuation across 20+ jump points', () => {
+    const now = Date.now()
+    const trail = []
+    for (let i = 0; i < 25; i++) {
+      // Alternating coordinates jumping 1km back and forth every 500ms
+      trail.push({
+        latitude: 48.8566 + (i % 2 === 0 ? 0.01 : -0.01),
+        longitude: 2.3522 + (i % 2 === 0 ? 0.01 : -0.01),
+        timestamp_ms: now + i * 500,
+      })
+    }
+    const analysis = detectGpsFluctuationAndSpoofing(trail)
+    expect(analysis.is_spoofed).toBe(true)
+    expect(analysis.anomaly_type).toBe('IMPOSSIBLE_VELOCITY')
+  })
+
+  it('verifies physically consistent officer pedestrian movement', () => {
+    const now = Date.now()
+    const trail = [
+      { latitude: 48.8566, longitude: 2.3522, timestamp_ms: now },
+      { latitude: 48.8567, longitude: 2.3523, timestamp_ms: now + 10000 }, // ~15m in 10s (walking speed)
+      { latitude: 48.8568, longitude: 2.3524, timestamp_ms: now + 20000 },
+    ]
+    const analysis = detectGpsFluctuationAndSpoofing(trail)
+    expect(analysis.is_spoofed).toBe(false)
+    expect(analysis.fluctuation_count).toBe(0)
+  })
+})
+
+describe('Tactical Location Cloaking & Honey-Decoy Fluctuation Defense', () => {
+  it('generates 20+ fluctuating phantom decoy coordinates around the real origin', () => {
+    const realLat = 23.8103
+    const realLon = 90.4125
+    const mesh = generateCloakedHoneyLocations(realLat, realLon, 25, 10)
+
+    expect(mesh.is_stealth_active).toBe(true)
+    expect(mesh.decoy_count).toBe(25)
+    expect(mesh.cloaked_broadcast_points.length).toBe(25)
+
+    // Check that all 25 decoy points are within the 10km noise radius but physically dispersed
+    mesh.cloaked_broadcast_points.forEach((point) => {
+      const dist = haversineDistance(realLat, realLon, point.latitude, point.longitude)
+      expect(dist).toBeLessThanOrEqual(12000) // Within noise radius bounds
+      expect(point.label).toMatch(/^DECOY_NODE_/)
+    })
+  })
+})
+
+

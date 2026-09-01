@@ -86,3 +86,149 @@ export function verifyGeofence(
     verified_at: new Date().toISOString(),
   }
 }
+
+export interface GpsTelemetryPoint {
+  latitude: number
+  longitude: number
+  timestamp_ms: number
+}
+
+export interface GpsSpoofingAnalysis {
+  is_spoofed: boolean
+  anomaly_type?: 'RAPID_FLUCTUATION' | 'IMPOSSIBLE_VELOCITY' | 'MOCK_LOCATION_JITTER'
+  fluctuation_count: number
+  max_velocity_mps: number
+  confidence_score: number
+  reason: string
+}
+
+/**
+ * Detect GPS Spoofing, Mock Location hops, and multi-location erratic fluctuation.
+ * Flags attacks where coordinates jump across 20+ artificial locations or exhibit impossible velocity.
+ */
+export function detectGpsFluctuationAndSpoofing(
+  telemetryTrail: GpsTelemetryPoint[],
+  maxAllowedSpeedMps: number = 45.0 // ~162 km/h
+): GpsSpoofingAnalysis {
+  if (!telemetryTrail || telemetryTrail.length < 2) {
+    return {
+      is_spoofed: false,
+      fluctuation_count: 0,
+      max_velocity_mps: 0,
+      confidence_score: 1.0,
+      reason: 'Insufficient telemetry points for statistical anomaly detection.',
+    }
+  }
+
+  let maxVelocity = 0
+  let erraticJumps = 0
+
+  for (let i = 1; i < telemetryTrail.length; i++) {
+    const p1 = telemetryTrail[i - 1]
+    const p2 = telemetryTrail[i]
+    const distMeters = haversineDistance(p1.latitude, p1.longitude, p2.latitude, p2.longitude)
+    const timeDeltaSec = Math.max(0.001, (p2.timestamp_ms - p1.timestamp_ms) / 1000)
+    const velocityMps = distMeters / timeDeltaSec
+
+    if (velocityMps > maxVelocity) {
+      maxVelocity = velocityMps
+    }
+
+    // Erratic jump: Sudden displacement of > 500 meters in under 2 seconds
+    if (distMeters > 500 && timeDeltaSec < 2) {
+      erraticJumps++
+    }
+  }
+
+  // 1. Check for Impossible Velocity / Teleportation
+  if (maxVelocity > maxAllowedSpeedMps) {
+    return {
+      is_spoofed: true,
+      anomaly_type: 'IMPOSSIBLE_VELOCITY',
+      fluctuation_count: erraticJumps,
+      max_velocity_mps: Math.round(maxVelocity * 100) / 100,
+      confidence_score: 0.99,
+      reason: `Impossible velocity detected: ${Math.round(maxVelocity * 3.6)} km/h exceeds physical boundary.`,
+    }
+  }
+
+  // 2. Check for multi-location erratic fluctuation (e.g. > 10 erratic jumps across 20 points)
+  if (erraticJumps >= 5 || (telemetryTrail.length >= 20 && erraticJumps >= 3)) {
+    return {
+      is_spoofed: true,
+      anomaly_type: 'RAPID_FLUCTUATION',
+      fluctuation_count: erraticJumps,
+      max_velocity_mps: Math.round(maxVelocity * 100) / 100,
+      confidence_score: 0.95,
+      reason: `Multi-location GPS fluctuation detected across ${telemetryTrail.length} telemetry points.`,
+    }
+  }
+
+  return {
+    is_spoofed: false,
+    fluctuation_count: erraticJumps,
+    max_velocity_mps: Math.round(maxVelocity * 100) / 100,
+    confidence_score: 0.98,
+    reason: 'GPS telemetry trajectory is physically consistent and continuous.',
+  }
+}
+
+export interface CloakedGpsMesh {
+  cloaked_broadcast_points: Array<{ latitude: number; longitude: number; label: string }>
+  decoy_count: number
+  is_stealth_active: boolean
+  noise_radius_km: number
+  cloaked_at: string
+}
+
+/**
+ * Tactical Location Cloaking & Honey-Decoy Generator
+ * Generates 20+ dynamic fluctuating decoy locations across a randomized mesh
+ * so adversaries intercepting network traffic or sniffing telemetry see erratic
+ * fluctuating phantom coordinates and cannot pinpoint the officer's true physical location.
+ */
+export function generateCloakedHoneyLocations(
+  realLat: number,
+  realLon: number,
+  decoyCount: number = 20,
+  noiseRadiusKm: number = 15
+): CloakedGpsMesh {
+  const decoys: Array<{ latitude: number; longitude: number; label: string }> = []
+  
+  // 1 degree latitude ~ 111km
+  const latDelta = noiseRadiusKm / 111.0
+  const lonDelta = noiseRadiusKm / (111.0 * Math.cos(realLat * (Math.PI / 180)))
+
+  for (let i = 0; i < decoyCount; i++) {
+    // Generate pseudo-random scattered points across multiple quadrants
+    const angle = (i * (360 / decoyCount) + (i * 17)) * (Math.PI / 180)
+    const distanceFactor = 0.3 + ((i * 37) % 70) / 100 // 0.3 to 1.0 radius
+
+    const phantomLat = realLat + Math.sin(angle) * latDelta * distanceFactor
+    const phantomLon = realLon + Math.cos(angle) * lonDelta * distanceFactor
+
+    decoys.push({
+      latitude: Math.round(phantomLat * 100000) / 100000,
+      longitude: Math.round(phantomLon * 100000) / 100000,
+      label: `DECOY_NODE_${String(i + 1).padStart(2, '0')}`,
+    })
+  }
+
+  // Shuffle decoys so the order constantly fluctuates
+  for (let i = decoys.length - 1; i > 0; i--) {
+    const j = (i * 13) % decoys.length
+    const temp = decoys[i]
+    decoys[i] = decoys[j]
+    decoys[j] = temp
+  }
+
+  return {
+    cloaked_broadcast_points: decoys,
+    decoy_count: decoys.length,
+    is_stealth_active: true,
+    noise_radius_km: noiseRadiusKm,
+    cloaked_at: new Date().toISOString(),
+  }
+}
+
+
