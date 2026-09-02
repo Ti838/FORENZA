@@ -1,0 +1,63 @@
+version: "3.9"
+
+# =============================================================
+# FORENZA — Local Development Stack
+# =============================================================
+# Usage:
+#   docker compose up ai-service       # Start only AI service
+#   docker compose up                  # Start all services
+#
+# Supabase is managed via the Supabase CLI (supabase start).
+# This file provides the AI microservice for local development.
+# =============================================================
+
+services:
+  # -----------------------------------------------------------
+  # AI Classification Microservice
+  # -----------------------------------------------------------
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: forenza-ai-service
+    ports:
+      - "8000:8000"
+    environment:
+      - AI_MODEL_PATH=/app/models/efficientnet_b0.onnx
+      - AI_SERVICE_API_KEY=${AI_SERVICE_API_KEY:-dev-key-change-in-production}
+      - AI_CONFIDENCE_THRESHOLD=${AI_CONFIDENCE_THRESHOLD:-0.50}
+      - LOG_LEVEL=info
+    volumes:
+      - ./ai-service/models:/app/models:ro
+      - ./ai-service/app:/app/app:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - forenza-local
+
+  # -----------------------------------------------------------
+  # Optional: pgAdmin for local DB inspection
+  # Access at http://localhost:5050
+  # Login: admin@forenza.local / forenza_pgadmin
+  # -----------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: forenza-pgadmin
+    profiles:
+      - tools
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@forenza.local
+      PGADMIN_DEFAULT_PASSWORD: forenza_pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - forenza-local
+
+networks:
+  forenza-local:
+    driver: bridge

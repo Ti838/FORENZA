@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=FORENZA Forensic Desktop
+Comment=Enterprise Forensic Evidence Chain of Custody & Judicial Review Platform
+Exec=/usr/bin/forenza %u
+Icon=forenza
+Type=Application
+Terminal=false
+Categories=Utility;Security;Science;
+MimeType=x-scheme-handler/forenza;
+StartupWMClass=forenza
+Keywords=forensic;evidence;hash;custody;legal;

@@ -1,0 +1,25 @@
+{
+  "name": "FORENZA — Forensic Evidence Platform",
+  "short_name": "FORENZA",
+  "description": "Enterprise Forensic Evidence Chain of Custody & Tamper-Evident Audit Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#2563EB",
+  "orientation": "any",
+  "categories": ["security", "productivity", "government"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
