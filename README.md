@@ -111,13 +111,23 @@ To run the platform locally for demonstration:
 
 ## 📚 Comprehensive Documentation
 
-The `docs/` folder contains professional, detailed documentation of the system's architecture, security, and algorithms:
+The `docs/` folder contains professional, detailed documentation of the system's architecture, security, and algorithms.
 
-- 🏗️ **Architecture & Setup:** [File Structure](docs/WEBSITE_FILE_STRUCTURE.md) \| [Local Dev](docs/WEBSITE_LOCAL_DEVELOPMENT.md) \| [Env Config](docs/WEBSITE_ENVIRONMENT_CONFIGURATION.md)
-- 🔒 **Security:** [Security Audit](docs/WEBSITE_SECURITY_AUDIT.md) \| [Threat Model](docs/WEBSITE_THREAT_MODEL.md)
-- 📊 **Workflows:** [Missing Functionality](docs/WEBSITE_MISSING_FUNCTIONALITY.md) \| [Project Audit](docs/WEBSITE_PROJECT_AUDIT.md)
+👉 **[Enter the Documentation Portal](docs/README.md)** 👈
+
+Or access specific guides directly:
+- [Developer Handover](docs/DEVELOPER_HANDOVER.md)
+- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md)
+- [Security & RBAC](docs/security/SECURITY.md)
+- [Local Development](docs/development/LOCAL_DEVELOPMENT.md)
 
 ---
+
+## 📜 License
+
+FORENZA is released under the MIT License.
+
+See the `LICENSE` file for details.
 
 <div align="center">
   <p><em>Developed for Academic Demonstration & Future Deployment</em></p>
