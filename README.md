@@ -1,81 +1,124 @@
-# FORENZA Intelligence & Command Platform (Web)
+<div align="center">
+  <img src="public/icon.png" alt="FORENZA Logo" width="120" />
+  <h1>FORENZA Web Application</h1>
+  <p><strong>Secure Evidence. Verified Chain. Defensible Truth.</strong></p>
 
-![FORENZA Web](https://via.placeholder.com/800x200.png?text=FORENZA+Intelligence+Platform)
-
-The FORENZA Web Application is the central command, control, and intelligence platform for the FORENZA forensic ecosystem. It provides a highly secure interface for judicial review, laboratory analysis, and administrative oversight of the chain of custody.
-
-## 🚀 Major Features
-- **Judicial Timeline:** Complete, chronologically immutable visual timeline of every piece of evidence from field capture to court.
-- **AI Intelligence Pipelines:** Integration with NVIDIA and Gemini to automatically detect discrepancies, perform OCR, and flag tampering.
-- **Role-Based Dashboards:** Specialized, isolated views for Officers, Judges, Lab Technicians, and Auditors.
-- **Cryptographic Verification:** Validates SHA-256 hashes submitted by field clients against the secure database.
-- **Desktop Wrapper:** Tauri-based native desktop compilation for Windows/macOS/Linux.
-
-## 🛠 Technology Stack
-- **Framework:** Next.js (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Database / Auth:** Supabase (PostgreSQL with RLS)
-- **AI Orchestration:** Custom pipeline (NVIDIA NIM, Gemini)
-- **Desktop Build:** Tauri (Rust)
-
-## 🏗 Architecture
-The platform is built on Next.js Server-Side Rendering (SSR) to ensure sensitive data is never exposed to the client unnecessarily. The database relies on strict Row-Level Security (RLS) to enforce data boundaries.
-
-Please see the [Web Architecture Documentation](docs/WEB_ARCHITECTURE.md) and the [System Architecture Diagram](docs/SYSTEM_ARCHITECTURE.md).
-
-## ⚙️ Setup & Installation
-
-### Prerequisites
-- Node.js (v18+)
-- npm
-- Supabase Project
-
-### Environment Configuration
-Copy the `.env.example` file to create your local environment file:
-```bash
-cp .env.example .env.local
-```
-Ensure you populate the `NEXT_PUBLIC_SUPABASE_URL` and required API keys.
-
-### Run Commands
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Start development server
-npm run dev
-```
-
-## 🧪 Testing & Verification
-```bash
-# Typecheck
-npm run typecheck
-
-# Linting
-npm run lint
-
-# Execute Vitest Suite
-npm test
-```
-
-## 📦 Building & Deployment
-```bash
-# Build the Next.js production bundle
-npm run build
-
-# Start production server
-npm run start
-```
-*For deployment, standard Vercel or Docker-based Node environments are fully supported.*
-
-## 🔗 Documentation Links
-- [System Architecture](docs/SYSTEM_ARCHITECTURE.md)
-- [Web Architecture](docs/WEB_ARCHITECTURE.md)
-- [Database Schema (ER Diagram)](docs/WEB_DATABASE.md)
-- [AI Pipelines](docs/WEB_AI.md)
-- [Security & RBAC](docs/WEB_SECURITY.md)
-- [Algorithm Audit](ALGORITHM_AUDIT.md)
+  <p>
+    <a href="#architecture"><img src="https://img.shields.io/badge/Architecture-Next.js-black?logo=next.js" alt="Next.js" /></a>
+    <a href="#security"><img src="https://img.shields.io/badge/Security-AES--256--GCM-red?logo=springsecurity" alt="Security" /></a>
+    <a href="#database"><img src="https://img.shields.io/badge/Database-Supabase-green?logo=supabase" alt="Supabase" /></a>
+    <a href="#ai"><img src="https://img.shields.io/badge/AI-Groq%20%7C%20NVIDIA-blue?logo=nvidia" alt="AI" /></a>
+  </p>
+</div>
 
 ---
-*FORENZA System - Central Intelligence Platform*
+
+## 📖 Overview
+**FORENZA** is an Enterprise Forensic Evidence Platform designed to bridge the gap between field investigation and courtroom validation. 
+
+This repository contains the **FORENZA Web Application**, an administrative, investigative, and judicial counterpart to the mobile field app. It provides secure, role-based dashboards for managing the entire lifecycle of digital and physical evidence.
+
+> [!CAUTION]
+> **LOCAL DEVELOPMENT ONLY:** This project is currently configured for academic demonstration and local testing. Do NOT deploy to production without executing the security checklists found in the `docs/` directory.
+
+---
+
+## 🏛️ System Architecture
+
+The web application utilizes a Serverless React architecture via Next.js (App Router), delegating database persistence and Row-Level Security (RLS) to Supabase.
+
+```mermaid
+graph TD
+    %% User Tier
+    Client[Web Browser]
+    
+    %% Next.js Application Tier
+    subgraph "FORENZA-web (Next.js App Router)"
+        Middleware[Next.js Middleware<br/>Auth & Route Protection]
+        RSC[React Server Components<br/>Direct DB Fetching]
+        API_Routes[Next.js API Routes<br/>AI Proxy]
+    end
+    
+    %% Backend/Infrastructure Tier
+    subgraph "Backend Infrastructure"
+        Auth[Supabase Auth]
+        Postgres[(PostgreSQL + RLS)]
+        Storage[Supabase Storage]
+        AI_Provider[Groq/NVIDIA LLM]
+    end
+    
+    Client -->|HTTPS| Middleware
+    Middleware --> Auth
+    Middleware --> RSC
+    RSC --> Postgres
+    Client --> Storage
+    Client --> API_Routes
+    API_Routes --> AI_Provider
+```
+
+---
+
+## 🔐 7-Role RBAC System
+
+FORENZA enforces strict data compartmentalization based on 7 distinct user roles. Access is controlled both via the Next.js `middleware.ts` (UI routing) and Supabase RLS (Data Access).
+
+| Role | Primary Responsibility | Workspace |
+|------|------------------------|-----------|
+| **Investigating Officer** | Case creation, evidence capture | `/officer` |
+| **Vault Custodian** | Physical evidence storage | `/vault` |
+| **Forensic Laboratory** | Sample analysis & reporting | `/lab` |
+| **Supervisor** | Investigation oversight & overrides | `/supervisor` |
+| **Judicial Chamber** | Evidence verification & dossiers | `/judge` |
+| **Compliance Officer** | Audit logs & security events | `/auditor` |
+| **System Administrator** | User & device management | `/admin` |
+
+*For the complete granular permission matrix, see [`docs/WEBSITE_RBAC_PERMISSION_MATRIX.md`](docs/WEBSITE_RBAC_PERMISSION_MATRIX.md).*
+
+---
+
+## 🔗 Key Capabilities
+
+### 1. Cryptographic Verification
+Evidence integrity is paramount. FORENZA utilizes SHA-256 hashing at the point of capture (via the Android App). The web platform verifies this hash against the stored binary to instantly flag tampering.
+
+### 2. Immutable Chain of Custody
+Every transfer of evidence requires a secure handshake (QR/NFC). The web platform visualizes this lineage, tracing the evidence from the crime scene, through the vault, into the lab, and finally to the courtroom.
+
+### 3. AI-Assisted Forensics
+The platform integrates with Groq/NVIDIA LLMs to assist officers with object classification and metadata extraction. 
+> [!WARNING]
+> All AI output is strictly labeled as **AI-ASSISTED** and requires human confirmation. The AI is a tool, not an authority.
+
+---
+
+## 🛠️ Local Development Setup
+
+To run the platform locally for demonstration:
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Configure Environment:**
+   Copy `.env.example` to `.env.local` and populate the keys.
+   *(Requires Supabase and MapTiler configurations)*
+3. **Run Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📚 Comprehensive Documentation
+
+The `docs/` folder contains professional, detailed documentation of the system's architecture, security, and algorithms:
+
+- 🏗️ **Architecture & Setup:** [File Structure](docs/WEBSITE_FILE_STRUCTURE.md) \| [Local Dev](docs/WEBSITE_LOCAL_DEVELOPMENT.md) \| [Env Config](docs/WEBSITE_ENVIRONMENT_CONFIGURATION.md)
+- 🔒 **Security:** [Security Audit](docs/WEBSITE_SECURITY_AUDIT.md) \| [Threat Model](docs/WEBSITE_THREAT_MODEL.md)
+- 📊 **Workflows:** [Missing Functionality](docs/WEBSITE_MISSING_FUNCTIONALITY.md) \| [Project Audit](docs/WEBSITE_PROJECT_AUDIT.md)
+
+---
+
+<div align="center">
+  <p><em>Developed for Academic Demonstration & Future Deployment</em></p>
+</div>
