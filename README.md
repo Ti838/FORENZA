@@ -1,86 +1,81 @@
-<div align="center">
+# FORENZA Intelligence & Command Platform (Web)
 
-  <img src="public/brand/forenza-banner.svg" alt="FORENZA Web Platform" width="100%" />
+![FORENZA Web](https://via.placeholder.com/800x200.png?text=FORENZA+Intelligence+Platform)
 
-  <br/><br/>
+The FORENZA Web Application is the central command, control, and intelligence platform for the FORENZA forensic ecosystem. It provides a highly secure interface for judicial review, laboratory analysis, and administrative oversight of the chain of custody.
 
-  # 🛡️ FORENZA WEB PLATFORM
-  ### *Zero-Trust Evidence Chain-of-Custody & Multi-Model Forensic Intelligence*
+## 🚀 Major Features
+- **Judicial Timeline:** Complete, chronologically immutable visual timeline of every piece of evidence from field capture to court.
+- **AI Intelligence Pipelines:** Integration with NVIDIA and Gemini to automatically detect discrepancies, perform OCR, and flag tampering.
+- **Role-Based Dashboards:** Specialized, isolated views for Officers, Judges, Lab Technicians, and Auditors.
+- **Cryptographic Verification:** Validates SHA-256 hashes submitted by field clients against the secure database.
+- **Desktop Wrapper:** Tauri-based native desktop compilation for Windows/macOS/Linux.
 
-</div>
+## 🛠 Technology Stack
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Database / Auth:** Supabase (PostgreSQL with RLS)
+- **AI Orchestration:** Custom pipeline (NVIDIA NIM, Gemini)
+- **Desktop Build:** Tauri (Rust)
 
----
+## 🏗 Architecture
+The platform is built on Next.js Server-Side Rendering (SSR) to ensure sensitive data is never exposed to the client unnecessarily. The database relies on strict Row-Level Security (RLS) to enforce data boundaries.
 
-## 📌 Executive Summary
+Please see the [Web Architecture Documentation](docs/WEB_ARCHITECTURE.md) and the [System Architecture Diagram](docs/SYSTEM_ARCHITECTURE.md).
 
-**FORENZA WEB** is the enterprise workstation application of the FORENZA suite. Engineered for law-enforcement agencies, forensic science laboratories, and judicial chambers, it provides advanced case management, evidence workflow, and assistive multi-model AI reasoning.
-
----
-
-## ⚡ Key Highlights
-
-| Feature | Description |
-| :--- | :--- |
-| **Tamper-Evident Lineage** | Cryptographically protected chain-of-custody. |
-| **Assistive AI Invariant** | Isolated Provenance for AI interactions. |
-| **Enterprise Workstation** | Optimized for investigators, labs, and judicial review. |
-
----
-
-## 🏛️ System Architecture
-
-FORENZA WEB is built on **Next.js 15**, utilizing a zero-trust backend with cryptographic state trees and non-destructive reconciliation.
-
-- **Next.js Web App**: React 19, Tailwind CSS.
-- **AI Microservice**: Python FastAPI backend for AI model execution.
-- **Supabase Integration**: Manages authentication and PostgreSQL database.
-
----
-
-## 🚀 Quickstart & Deployment
+## ⚙️ Setup & Installation
 
 ### Prerequisites
-* **Node.js:** `v20.x` or `v22.x`
-* **Package Manager:** `npm` or `pnpm`
-* **Database:** PostgreSQL 15+ (or Supabase Cloud)
+- Node.js (v18+)
+- npm
+- Supabase Project
 
-### 1. Clone & Configure
+### Environment Configuration
+Copy the `.env.example` file to create your local environment file:
 ```bash
-git clone https://github.com/Ti838/FORENZA-web.git
-cd FORENZA-web
 cp .env.example .env.local
 ```
+Ensure you populate the `NEXT_PUBLIC_SUPABASE_URL` and required API keys.
 
-### 2. Install Dependencies & Run Tests
+### Run Commands
 ```bash
+# 1. Install dependencies
 npm install
+
+# 2. Start development server
+npm run dev
+```
+
+## 🧪 Testing & Verification
+```bash
+# Typecheck
+npm run typecheck
+
+# Linting
+npm run lint
+
+# Execute Vitest Suite
 npm test
 ```
 
-### 3. Start Local Development Server
+## 📦 Building & Deployment
 ```bash
-npm run dev
+# Build the Next.js production bundle
+npm run build
+
+# Start production server
+npm run start
 ```
-Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+*For deployment, standard Vercel or Docker-based Node environments are fully supported.*
+
+## 🔗 Documentation Links
+- [System Architecture](docs/SYSTEM_ARCHITECTURE.md)
+- [Web Architecture](docs/WEB_ARCHITECTURE.md)
+- [Database Schema (ER Diagram)](docs/WEB_DATABASE.md)
+- [AI Pipelines](docs/WEB_AI.md)
+- [Security & RBAC](docs/WEB_SECURITY.md)
+- [Algorithm Audit](ALGORITHM_AUDIT.md)
 
 ---
-
-## 📚 Master Documentation Index
-
-All technical documents are maintained in the `docs/` directory:
-
-- [docs/WEB_ARCHITECTURE.md](docs/WEB_ARCHITECTURE.md)
-- [docs/WEB_SETUP.md](docs/WEB_SETUP.md)
-- [docs/WEB_FEATURES.md](docs/WEB_FEATURES.md)
-- [docs/WEB_SECURITY.md](docs/WEB_SECURITY.md)
-- [docs/WEB_API.md](docs/WEB_API.md)
-- [docs/WEB_AI.md](docs/WEB_AI.md)
-- [docs/WEB_TESTING.md](docs/WEB_TESTING.md)
-- [docs/WEB_DEPLOYMENT.md](docs/WEB_DEPLOYMENT.md)
-
----
-
-## 📜 Proprietary License & Ownership
-
-**Copyright © 2024–2026 Timon Biswas. All Rights Reserved.**  
-**Creator & Sole Rights Holder:** Timon Biswas (`timonbiswas33@gmail.com`)
+*FORENZA System - Central Intelligence Platform*
