@@ -51,7 +51,7 @@ None that affect the current local development scope.
 - Local AI container integration.
 
 ## LICENSE:
-MIT License applied.
+Proprietary (All Rights Reserved). No copying or modification allowed.
 
 ## APPLICATION LOGIC MODIFIED:
 No. Zero logic or architectural changes were made to the codebase. Only documentation, structural cleanup, and licensing were affected.

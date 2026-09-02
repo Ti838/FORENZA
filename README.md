@@ -123,9 +123,11 @@ Or access specific guides directly:
 
 ---
 
-## 📜 License
+## 📜 License & Intellectual Property
 
-FORENZA is released under the MIT License.
+**Copyright (c) 2026 Timon Biswas. All Rights Reserved.**
+
+This project is **PROPRIETARY AND CONFIDENTIAL**. No license is granted to copy, distribute, or use this software or its underlying concepts for any purpose without explicit written permission.
 
 See the `LICENSE` file for details.
 
