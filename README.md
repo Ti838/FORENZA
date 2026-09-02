@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/icon.png" alt="FORENZA Logo" width="120" />
+  <img src="public/logo.png" alt="FORENZA Logo" width="120" />
   <h1>FORENZA Web Application</h1>
   <p><strong>Secure Evidence. Verified Chain. Defensible Truth.</strong></p>
 
